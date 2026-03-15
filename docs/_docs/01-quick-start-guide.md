@@ -1,0 +1,9 @@
+---
+title: "Quick-Start Guide"
+permalink: /docs/quick-start-guide/
+excerpt: "How to quickly install and setup Minimal Mistakes Plus for use with GitHub Pages."
+last_modified_at: 2026-03-15
+toc: true
+---
+
+Minimal Mistakes Plus
