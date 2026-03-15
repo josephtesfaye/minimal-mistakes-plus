@@ -8,9 +8,6 @@ gem "kramdown-parser-gfm"
 gem "faraday-retry"
 gem "org-ruby"
 
-# Load your local plugin directly from the parent directory
-gem "minimal-mistakes-plus", path: "../"
-
 group :jekyll_plugins do
   gem "jekyll-paginate"
   gem "jekyll-sitemap"
@@ -19,6 +16,8 @@ group :jekyll_plugins do
   gem "jemoji"
   gem "jekyll-include-cache"
   gem "jekyll-algolia"
+  # Load your local plugin directly from the parent directory
+  gem "minimal-mistakes-plus", path: "../"
 end
 
 # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem

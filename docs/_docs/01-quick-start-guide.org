@@ -6,4 +6,4 @@ last_modified_at: 2026-03-15
 toc: true
 ---
 
-Minimal Mistakes Plus
+* Minimal Mistakes Plus
