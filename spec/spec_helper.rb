@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require "minimal_mistakes_plus"
+require "jekyll"
+require "minimal-mistakes-plus"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
