@@ -7,7 +7,9 @@ gem "webrick"
 gem "kramdown-parser-gfm"
 gem "faraday-retry"
 gem "org-ruby"
-gem "minimal-mistakes-plus", path: "~/projects/minimal-mistakes-plus"
+
+# Load your local plugin directly from the parent directory
+gem "minimal-mistakes-plus", path: "../"
 
 group :jekyll_plugins do
   gem "jekyll-paginate"
