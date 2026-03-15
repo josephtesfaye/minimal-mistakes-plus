@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "lib/minimal/mistakes/plus/version"
+require_relative "lib/minimal_mistakes_plus/version"
 
 Gem::Specification.new do |spec|
   spec.name = "minimal-mistakes-plus"
-  spec.version = Minimal::Mistakes::Plus::VERSION
+  spec.version = MinimalMistakesPlus::VERSION
   spec.authors = ["Joseph Huang"]
   spec.email = ["josephtesfaye022@gmail.com"]
 

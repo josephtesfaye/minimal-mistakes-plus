@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "minimal/mistakes/plus"
+require "minimal_mistakes_plus"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
