@@ -1,0 +1,211 @@
+/* Only apply these styles if the viewport is at least 80em wide, which is
+   equivalent to 1280px (on a standard browser where 1em = 16px). */
+@media (min-width: 80em) {
+  // Remove right padding of the home page
+  .archive {
+    padding-right: 0;
+  }
+
+  // Decrease the text size of pages; rem is used to avoid compounding caused by
+  // em. Lists under TOC are not affected.
+  .page__content :is(p, .language-example, li:not(.toc li)) {
+    font-size: 0.8rem;
+  }
+
+  // Reset the font size of code blocks, tables, etc. relative to root
+  div.highlighter-rouge, .page__content li table {
+    font-size: 0.75rem;
+  }
+}
+
+.page__content {
+  // Use rotating bullet styles for ordered lists
+  ol {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  // Reset numbering inside each new <ol> under a <li>, i.e., limiting the
+  // scope of numbering inside the <li> only.
+  li>ol, ol ol {
+    counter-reset: item;
+  }
+
+  ol>li {
+    display: block;
+    position: relative;
+    padding-left: 2em;
+    counter-increment: item;
+  }
+
+  /* Level 1 */
+  ol>li::before {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2em;
+    text-align: left;
+
+    /* Level 1 */
+    content: counter(item, decimal) ". ";
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Level 2 */
+  ol ol>li::before {
+    content: "(" counter(item, decimal) ") ";
+  }
+
+  /* Level 3 */
+  ol ol ol>li::before {
+    content: counter(item, lower-alpha) ". ";
+  }
+
+  /* Level 4 */
+  ol ol ol ol>li::before {
+    content: "(" counter(item, lower-alpha) ") ";
+  }
+
+  /* Level 5: Repeat Cycle -> Decimal */
+  ol ol ol ol ol>li::before {
+    content: counter(item, decimal) ". ";
+  }
+
+  /* Level 6 */
+  ol ol ol ol ol ol>li::before {
+    content: "(" counter(item, decimal) ") ";
+  }
+
+  // The unordered lists under an item of an ordered list
+  ol>li>ul {
+    padding-left: 1em;
+  }
+
+  ol>li>p:first-child {
+    display: inline-block;
+    margin: 0em auto 0.5em 0em;
+  }
+
+  // Reduce the left padding for unordered lists
+  ul:not(.toc ul, ol>li>ul) {
+    padding-left: 1em;
+  }
+
+  // Remove the top margin of child elements of a list item, except those in TOC
+  li:not(.toc li) :is(p, ul, ol) {
+    margin: 0em auto 0.5em 0em;
+  }
+}
+
+span.underline {
+  width: 4em;
+  display: inline-block;
+}
+
+//Increase the number of columns of the grid layout in tags, categories, years,
+//etc.
+.taxonomy__index {
+  @include breakpoint($large) {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+// Enable more columns in a gallery
+.page__content .custom-grid {
+  display: grid;
+  gap: 0.5em;
+}
+
+.custom-grid figure {
+  margin: 0;
+  width: 100%;
+}
+
+.custom-grid figcaption {
+  grid-column: 1 / -1;
+}
+
+.custom-grid img {
+  margin-bottom: 0;
+}
+
+// Remove the pop-up layout between images when switching them in a gallery
+.mfp-preloader {
+  visibility: hidden;
+}
+
+// Show it only if the load time is more than 1 second
+.mfp-s-loading .mfp-preloader {
+  animation: mfp-delay-preloader 0s forwards 1s;
+}
+
+@keyframes mfp-delay-preloader {
+  to {
+    visibility: visible;
+  }
+}
+
+.mfp-title>p {
+  margin-top: 0;
+}
+
+// ==== Enable sticky TOC for mobile [BEGIN] ====
+.toc-mobile-btn {
+  display: none;
+}
+
+@media (max-width: 64em) {
+  // 1. The floating button
+  .has-toc .toc-mobile-btn {
+    display: flex;
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 9999;
+    background: rgba(128, 128, 128, 0.2); // Light/Dark mode agnostic
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    color: inherit;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  // 2. The TOC Popup Panel
+  .sidebar__right.sticky .toc {
+    position: fixed;
+    bottom: 90px;
+    right: 25px;
+    width: 320px;
+    max-width: calc(100vw - 50px);
+    max-height: 60vh;
+    overflow-y: auto;
+    z-index: 9998;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+    margin: 0;
+
+    // Animation states
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+    &.is-active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+  }
+}
+// ==== Enable sticky TOC for mobile [END] ====

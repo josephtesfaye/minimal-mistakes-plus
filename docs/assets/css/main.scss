@@ -7,6 +7,8 @@
 @import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
 @import "minimal-mistakes"; // main partials
 
-{% if site.dark_mode_toggle %}
-@import "minimal_mistakes_plus/dark_mode_toggle";
-{% endif %}
+// @media (min-width: 80em) {
+//   .page__content :is(p, .language-example, li:not(.toc li)) {
+//     font-size: 0.8rem;
+//   }
+// }
