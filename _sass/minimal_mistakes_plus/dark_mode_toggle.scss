@@ -1,0 +1,266 @@
+:root {
+  /* Default Light Skin Variables */
+  --background-color: #ffffff;
+  --text-color: #3d4144;
+  --muted-text-color: #646769;
+  --primary-color: #6f777d;
+  --active-color: #e2e4e5;
+  --link-color: #2f7d95;
+  --link-color-hover: #235e70;
+  --link-color-visited: #4e91a5;
+  --masthead-link-color: var(--primary-color);
+  --masthead-link-color-hover: #53595e;
+  --border-color: #f2f3f3;
+  --border-color-2: #b6b6b6;
+  --disabled-color: rgba(100,103,105,0.5);
+  --inline-code-color: #c9f0f1;
+  --footer-background-color: #f2f3f3;
+  --notice-bg-color: #f2f3f3;
+  --notice--primary-bg-color :#e2e4e5;
+  --notice--info-bg-color :#d8ebf1;
+  --notice--warning-bg-color :#f7e5cd;
+  --notice--success-bg-color :#d9edd9;
+  --notice--danger-bg-color :#fcdfde;
+}
+
+/* 1. Define the dark theme colors in a mixin */
+@mixin dark-theme-styles {
+  --background-color: #252a34;
+  --text-color: #eaeaea;
+  --muted-text-color: #eee;
+  --primary-color: #00adb5;
+  --active-color: #cceff0;
+  --link-color: #8cd2d5;
+  --link-color-hover: #a9dde0;
+  --link-color-visited: #699ea0;
+  --masthead-link-color: var(--text-color);
+  --masthead-link-color-hover: #bbb;
+  --border-color: #51555d;
+  --border-color-2: #3d4046;
+  --disabled-color: rgba(238,238,238,0.5);
+  --inline-code-color: #2e3c43;
+  --footer-background-color: #1a1d24;
+  --notice-bg-color: #434851;
+  --notice--primary-bg-color :#1e444e;
+  --notice--info-bg-color :#29414f;
+  --notice--warning-bg-color :#483b2b;
+  --notice--success-bg-color :#2a4336;
+  --notice--danger-bg-color :#4d353c;
+}
+
+/* 2. Apply it to the manual toggle attribute */
+[data-theme="dark"] {
+  @include dark-theme-styles;
+}
+
+/* 3. Apply it to the system preference automatically */
+@media (prefers-color-scheme: dark) {
+  /* Only apply if the user hasn't explicitly chosen 'light' */
+  html:not([data-theme="light"]) {
+    @include dark-theme-styles;
+  }
+}
+
+/* --- Contents --- */
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.search__toggle, .page__title a, .page__title a:visited, .page__meta {
+  color: var(--text-color);
+}
+
+.archive__subtitle,
+.page__footer,
+figcaption {
+  color: var(--muted-text-color);
+}
+
+a {
+  color: var(--link-color);
+}
+
+a:visited {
+  color: var(--link-color-visited);
+}
+
+a:hover, .pagination li a:hover, .page__taxonomy-item:hover {
+  color: var(--link-color-hover);
+}
+
+.page__meta a, .social-icons a:visited {
+  color: inherit;
+}
+
+/* --- Navigation --- */
+
+.masthead,
+.archive__subtitle,
+.page__content h2,
+.taxonomy__index a,
+.embed-refresh-v2 .nav-primary--refresh {
+  border-bottom-color: var(--border-color);
+}
+
+.greedy-nav, .greedy-nav__toggle:before, .toc {
+  background-color: var(--background-color);
+}
+
+.greedy-nav a,
+.search__toggle {
+  color: var(--masthead-link-color);
+}
+
+.greedy-nav a:hover,
+.search__toggle:hover {
+  color: var(--masthead-link-color-hover);
+}
+
+.greedy-nav .hidden-links {
+  background-color: var(--background-color);
+  border-color: var(--border-color);
+}
+
+.greedy-nav .hidden-links li {
+  border-bottom-color: var(--border-color);
+}
+
+// Theme toggle button
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--masthead-link-color);
+  font-size: 1em;
+  padding: 0 10px;
+  vertical-align: middle;
+  outline: none;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+/* Update the icon when dark mode is active */
+html[data-theme="dark"] .theme-toggle-btn i::before {
+  content: "\f185"; /* FontAwesome Sun Icon code */
+}
+
+.greedy-nav .visible-links a:before,
+.pagination li a.current,
+.pagination li a.current.disabled,
+.toc .nav__title {
+  background-color: var(--primary-color);
+}
+
+.toc,
+.toc__menu a,
+.dark .disqus-footer__wrapper--refresh {
+  border-color: var(--border-color);
+}
+
+.toc .active a {
+  background-color: var(--active-color);
+}
+
+.toc__menu a {
+  color: var(--muted-text-color);
+}
+
+:is(.toc__menu a:hover):not(.active *) {
+  color: var(--text-color);
+}
+
+.page__content :not(pre)>code {
+  background-color: var(--inline-code-color);
+}
+
+.page__related,
+.page__content+.pagination,
+.page__meta+.pagination,
+.comment__date+.pagination,
+.page__share,
+.page__share+.pagination,
+.page__comments+.pagination,
+.page__comments-title {
+  border-top-color: var(--border-color);
+}
+
+.archive__item-title a {
+  text-decoration: none;
+}
+
+.pagination li a, .pagination--pager, .page__taxonomy-item {
+  color: var(--muted-text-color);
+  border-color: var(--border-color-2);
+}
+
+.pagination li a.disabled, .pagination--pager.disabled {
+  color: var(--disabled-color);
+}
+
+.pagination--pager:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+}
+
+.page__footer {
+  background-color: var(--footer-background-color);
+}
+
+/* Only applies when the <html> tag has data-theme="dark" */
+[data-theme="dark"] :is(.author__urls.social-icons i,
+                        .author__urls.social-icons .svg-inline--fa,
+                        .page__footer-follow .social-icons i,
+                        .page__footer-follow .social-icons .svg-inline--fa)
+{
+  color: inherit;
+}
+
+thead {
+  background-color: var(--border-color);
+  border-bottom-color: var(--border-color-2);
+}
+
+td {
+  border-bottom-color: var(--border-color-2);
+}
+
+.notice, .notice--primary, .notice--info, .notice--warning, .notice--success,
+.notice--danger {
+  color: var(--text-color);
+}
+
+.notice {
+  background-color: var(--notice-bg-color);
+}
+
+.notice--primary {
+  background-color: var(--notice--primary-bg-color);
+}
+
+.notice--info {
+  background-color: var(--notice--info-bg-color);
+}
+
+.notice--warning {
+  background-color: var(--notice--warning-bg-color);
+}
+
+.notice--success {
+  background-color: var(--notice--success-bg-color);
+}
+
+.notice--danger {
+  background-color: var(--notice--danger-bg-color);
+}
+
+u {
+  border-bottom-color: var(--text-color);
+}
+
+blockquote {
+  border-left-color: var(--primary-color);
+}
