@@ -9,5 +9,7 @@ docs:
         url: /docs/quick-start-guide/
   - title: Customization
     children:
+      - title: "Dark Mode"
+        url: /docs/dark-mode/
       - title: "Org Mode"
         url: /docs/org-mode/

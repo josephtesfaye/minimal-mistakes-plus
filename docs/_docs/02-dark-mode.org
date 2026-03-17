@@ -1,0 +1,52 @@
+---
+title: "Toggling Dark Mode"
+permalink: /docs/dark-mode/
+last_modified_at: 2026-03-17
+class: wide
+---
+
+A dark mode toggling icon appears right after the search icon when you add the
+following entry to your =_config.yml=:
+
+#+begin_src yaml
+dark_mode_toggle: true
+#+end_src
+
+With the icon you can toggle dark mode on or off on the fly for the whole site.
+
+If you have custom =_includes/masthead.html= and =_includes/head/custom.html= files
+in your project they will completely override the same files in both the theme
+and the plugin. You need to add the following snippets to them to properly
+enable this feature.
+
+- Add the icon ~theme-toggle-btn~ after the search icon ~fa-search~ in
+  =_includes/masthead.html=:
+
+  {% raw %}
+  #+begin_src diff
+  @@ -28,6 +26,13 @@
+             <i class="fas fa-search"></i>
+           </button>
+           {% endif %}
+  +
+  +        {% if site.dark_mode_toggle %}
+  +        <button class="theme-toggle-btn" onclick="switchTheme()">
+  +          <i class="fas fa-moon"></i>
+  +        </button>
+  +        {% endif %}
+  +
+           <button class="greedy-nav__toggle hidden" type="button">
+             <span class="visually-hidden">{{ site.data.ui-text[site.locale].menu_label | default: "Toggle menu" }}</span>
+             <div class="navicon"></div>
+  #+end_src
+  {% endraw %}
+
+- Add to anywhere in =_includes/head/custom.html=:
+
+  {% raw %}
+  #+begin_src html
+  {% if site.dark_mode_toggle %}
+  <script src="{{ '/assets/js/dark_mode_toggle.js' | relative_url }}"></script>
+  {% endif %}
+  #+end_src
+  {% endraw %}
