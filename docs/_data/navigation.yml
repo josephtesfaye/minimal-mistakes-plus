@@ -13,3 +13,5 @@ docs:
         url: /docs/dark-mode/
       - title: "Org Mode"
         url: /docs/org-mode/
+      - title: "Link Abbreviations"
+        url: /docs/link-abbr/

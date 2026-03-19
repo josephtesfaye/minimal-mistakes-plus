@@ -1,0 +1,110 @@
+---
+title: "Link Abbreviations"
+permalink: /docs/link-abbr/
+last_modified_at: 2026-03-17
+toc: true
+toc_sticky: true
+link_abbrs:
+  - link_abbr: foo https://i.postimg.cc/Vv8jFw8D/
+gallery:
+  - url: foo:unsplash-gallery-image-1.jpg
+    image_path: foo:unsplash-gallery-image-1.jpg
+    title: Check this [[foo:unsplash-gallery-image-1.jpg][image]]
+  - image_path: foo:unsplash-gallery-image-1.jpg
+  - foo:unsplash-gallery-image-1.jpg
+  - image_path: [[foo:unsplash-gallery-image-1.jpg]]
+    title: An image referenced through an org link
+  - [[foo:unsplash-gallery-image-1.jpg]]
+  - [[foo:unsplash-gallery-image-1.jpg]]
+---
+
+#+LINK: foo https://i.postimg.cc/Vv8jFw8D/
+
+You can use link abbreviations in a document drafted in Markdown or Org Mode,
+for example, ~foo:my-image.jpg~ where ~foo:~ is a link abbreviation of the full path
+of the parent of ~my-image.jpg~.
+
+This lets you focus on resource names instead of their full paths when composing
+links, and switch their parent path easily when many resources are under the
+same parent.
+
+To create a link abbreviation, in the front matter add the abbreviation and its
+full form in a ~link_abbr~ in the ~link_abbrs~ array, like this:
+
+#+begin_src org
+link_abbrs:
+  - link_abbr: foo https://i.postimg.cc/Vv8jFw8D/
+#+end_src
+
+Then you can use the abbreviation in links throughout the document. It will be
+expanded to the full form in the built site.
+
+Org Mode has its own built-in link abbreviations using ~#+LINK~. Here it can also
+be used for Jekyll build. It acts as a fallback to ~link_abbrs~ in the front
+matter, i.e., if an abbreviation isn't found in ~link_abbrs~ but found in ~#+LINK~,
+also use it to expand links in the built site. ~#+LINK~ can appear anywhere in the
+document except the front matter.
+
+#+begin_src org
+---
+link_abbrs:
+  - link_abbr: foo https://i.postimg.cc/Vv8jFw8D/
+---
+
+,#+LINK: foo https://your/fallback/link/
+#+end_src
+
+Below are the supported use cases of link abbreviations.
+
+** Standard Org Links
+
+Here is an image:
+
+#+begin_src org
+[[foo:unsplash-gallery-image-1.jpg]]
+#+end_src
+
+[[foo:unsplash-gallery-image-1.jpg]]
+
+** Figure
+
+Links written in Liquid syntax are also supported. For example, here is a
+figure:
+
+{% raw %}
+#+begin_src org
+{% include figure image_path="foo:unsplash-gallery-image-1.jpg" popup=true
+alt="" caption="A figure" %}
+#+end_src
+{% endraw %}
+
+{% include figure image_path="foo:unsplash-gallery-image-1.jpg" popup=true
+alt="" caption="A figure" %}
+
+** Gallery
+
+You can create a gallery as usual in [[https://mmistakes.github.io/minimal-mistakes/docs/helpers/#gallery][Minimal Mistakes]]. The extra benefit is that
+now you can use link abbreviations in it, like this:
+
+{% raw %}
+#+begin_src org
+---
+gallery:
+  - url: foo:unsplash-gallery-image-1.jpg
+    image_path: foo:unsplash-gallery-image-1.jpg
+    title: Check this [[foo:unsplash-gallery-image-1.jpg][image]]
+  - image_path: foo:unsplash-gallery-image-1.jpg
+  - foo:unsplash-gallery-image-1.jpg
+  - image_path: [[foo:unsplash-gallery-image-1.jpg]]
+    title: An image referenced through an org link
+  - [[foo:unsplash-gallery-image-1.jpg]]
+  - [[foo:unsplash-gallery-image-1.jpg]]
+---
+
+{% include gallery columns=6 caption="A gallery using link abbreviations " %}
+#+end_src
+{% endraw %}
+
+All the link forms shown above can be expanded correctly to the same image path:
+
+{% include gallery columns=6 caption="A gallery using link abbreviations " %}
