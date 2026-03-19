@@ -259,6 +259,8 @@ A gallery (with [customization]({{ site.baseurl }}{% post_url 2026-02-20-custom-
 
 Inline codes: ~print~, =hello=
 
+Inline codes: ~github: "josephtesfaye/minimal-mistakes-plus"~,
+
 Using ~:~ to start a line of code:
 
 : descriptor + subject + taxonomic rank
@@ -307,6 +309,30 @@ Hello
 
 {: .notice--danger}
 *Watch out!* This is a warning notice inside an Org file.
+
+TODO: How to use notice on multiple paragraphs:
+
+#+begin_html
+<div class="notice--warning" markdown="1">
+It seems ~bundle install~ in GitHub Actions' =build_and_deploy= workflow of
+~josephs-blog~ doesn’t pull the latest code from =minimal-mistakes-plus=
+automatically with the setup:
+
+#+begin_src ruby
+gem "minimal-mistakes-plus", github: "josephtesfaye/minimal-mistakes-plus", branch: "main"
+#+end_src
+
+It still uses the old commit as indicated by the line:
+
+#+begin_src text
+Using minimal-mistakes-plus 0.1.0 from https://github.com/josephtesfaye/minimal-mistakes-plus.git (at main@70a94f2)
+#+end_src
+
+which is the same as shown in =Gemfile.lock= of =josephs-blog=. Does this mean I
+have to run ~bundle install~ and commit the updated ~Gemfile.lock~ in order to use
+the latest code? Can you make it pull in the latest code automatically?
+</div>
+#+end_html
 
 ** Furigana
 

@@ -1,0 +1,19 @@
+---
+title: "Quick-Start Guide"
+permalink: /docs/quick-start-guide/
+last_modified_at: 2026-03-15
+toc: true
+---
+
+Here's how to quickly install and setup Minimal Mistakes Plus for use with
+GitHub Actions.
+
+** Using Minimal Mistakes Plus Scaffold (The Fastest Approach)
+
+1. Clone or download the repository [[https://github.com/josephtesfaye/minimal-mistakes-plus-scaffold][Minimal Mistakes Plus Scaffold]].
+2. In its top folder run:
+
+   #+begin_src sh
+   bundle install
+   bundle exec jekyll serve
+   #+end_src
