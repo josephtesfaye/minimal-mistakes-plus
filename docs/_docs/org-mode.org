@@ -175,54 +175,10 @@ An ordered list with multiple levels:
 3. Third item
 
 ** Links
-*** Link Abbreviations
+In addition to standard Org links, =minimal-mistakes-plus= facilitates the
+composing of links in the following ways:
 
-In Markdown you can use [[https://josephtesfaye.com/blog/web/link-abbr/][link abbreviations]] to expand links throughout the
-document. Now you can do the same in an Org document, heeding Org Mode's own
-built-in link abbreviation method, i.e., ~#+LINK~.
-
-For example:
-
-{% raw %}
-#+begin_src org
----
-title: "Org Links"
-link_abbrs:
-  - link_abbr: foo https://i.postimg.cc/Vv8jFw8D/
-gallery:
-  - url: foo:unsplash-gallery-image-1.jpg
-    image_path: foo:unsplash-gallery-image-1.jpg
-    title: Check this [[foo:unsplash-gallery-image-1.jpg][image]]
-  - image_path: foo:unsplash-gallery-image-1.jpg
-  - foo:unsplash-gallery-image-1.jpg
-  - image_path: [[foo:unsplash-gallery-image-1.jpg]]
-  - [[foo:unsplash-gallery-image-1.jpg]]
-  - [[foo:unsplash-gallery-image-1.jpg]]
----
-
-,#+LINK: foo ~/Downloads/temp/archive/image/foo/
-
-,#+CAPTION: This is an image
-[[foo:unsplash-gallery-image-1.jpg]]
-
-{% include figure image_path="foo:unsplash-gallery-image-1.jpg" popup=true
-alt="" caption="A figure" %}
-
-{% include gallery columns=3 caption="This is a gallery" %}
-#+end_src
-{% endraw %}
-
-Here ~#+LINK~ is used in Org Mode, also for Jekyll build. It acts as a fallback to
-~link_abbrs~ in the front matter, i.e., if an abbreviation isn't found in
-~link_abbrs~ but found in ~#+LINK~, also use it to expand links in the built site.
-~#+LINK~ can appear anywhere in the document except the front matter.
-
-#+LINK: foo ~/Downloads/temp/archive/image/foo/
-
-#+CAPTION: This is an image
-[[foo:unsplash-gallery-image-1.jpg]]
-
-{% include gallery id="gallery-link-abbr" columns=6 caption="A gallery" %}
+- [Link Abbreviations]({{ site.baseurl }}/docs/link-abbr/)
 
 *** Link to a Post
 

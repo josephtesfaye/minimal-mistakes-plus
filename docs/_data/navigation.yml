@@ -15,3 +15,5 @@ docs:
         url: /docs/org-mode/
       - title: "Link Abbreviations"
         url: /docs/link-abbr/
+      - title: "Link Abbreviations (Markdown)"
+        url: /docs/link-abbr-md/
