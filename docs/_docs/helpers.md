@@ -131,3 +131,14 @@ You can write furigana for Japanese Kanji words like the following:
 本｜日（ほん｜じつ）はお時｜間（じ｜かん）をいただき、ありがとうございます。私は
 マカオにあるマカオ理｜工｜大｜学（り｜こう｜だい｜がく）を4年｜制（ねん｜せい）
 の学｜士（がく｜し）課｜程（か｜てい）で卒業（そつ｜ぎょう）しました。
+
+You can also write furigana for ~Katakana（English）~ pairs, that is, if matched,
+put the English above the Katakana word just like furigana. For example:
+
+``` text
+クラウド（cloud）ネイティブ（native）なマルチテナント（multi-tenant）型バックエ
+ンド（backend）プラットフォーム（platform）の設計
+```
+
+クラウド（cloud）ネイティブ（native）なマルチテナント（multi-tenant）型バックエ
+ンド（backend）プラットフォーム（platform）の設計

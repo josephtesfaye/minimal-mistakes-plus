@@ -2,6 +2,7 @@ require "nokogiri"
 
 module MinimalMistakesPlus
   FURIGANA_REGEX = /((?:\p{Han}|々|｜)(?:(?:\p{Han}|々|｜|\s)*(?:\p{Han}|々|｜))?)\s*（([ぁ-んァ-ヶー｜\s]+)）/
+  KATAKANA_REGEX = /([ァ-ヶー・]+)\s*[（(]([a-zA-Z0-9\s\-]+)[）)]/
 
   module Furigana
     def self.process(doc)
@@ -11,11 +12,13 @@ module MinimalMistakesPlus
       html_doc = Nokogiri::HTML(doc.output)
       modified = false
 
-      target_nodes = html_doc.xpath('.//text()[not(ancestor::pre or ancestor::code) and contains(., "（")]')
+      target_nodes = html_doc.xpath('.//text()[not(ancestor::pre or ancestor::code) and (contains(., "（") or contains(., "("))]')
       target_nodes.each do |node|
         content = node.content
-        if content.match?(FURIGANA_REGEX)
-          new_html = content.gsub(FURIGANA_REGEX) do
+        if content.match?(FURIGANA_REGEX) || content.match?(KATAKANA_REGEX)
+          new_html = content.dup
+
+          new_html = new_html.gsub(FURIGANA_REGEX) do
             raw_base = ::Regexp.last_match(1)
             raw_ruby = ::Regexp.last_match(2)
             clean_base = raw_base.gsub(/\s+/, "")
@@ -31,6 +34,10 @@ module MinimalMistakesPlus
               rb = clean_ruby.delete("｜")
               "<ruby>#{base}<rt>#{rb}</rt></ruby>"
             end
+          end
+
+          new_html = new_html.gsub(KATAKANA_REGEX) do
+            "<ruby>#{::Regexp.last_match(1)}<rt>#{::Regexp.last_match(2)}</rt></ruby>"
           end
 
           if new_html != content
