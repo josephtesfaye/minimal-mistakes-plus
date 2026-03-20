@@ -1,10 +1,6 @@
 require 'nokogiri'
 require 'rouge'
 
-module Jekyll
-  FURIGANA_REGEX = /((?:\p{Han}|々|\|)(?:(?:\p{Han}|々|\||\s)*(?:\p{Han}|々|\|))?)\s*[（(]([ぁ-んァ-ヶー|\s]+)[）)]/
-end
-
 Jekyll::Hooks.register [:pages, :documents], :pre_render do |doc|
   # Enable Liquid syntax
   if doc.extname.downcase == '.org'
@@ -26,7 +22,7 @@ Jekyll::Hooks.register [:pages, :documents], :pre_render do |doc|
     end
 
     # Pre-process furigana to strip newlines and prevent org-ruby table corruption
-    doc.content = doc.content.gsub(/#{block_regex}|#{raw_regex}|#{Jekyll::FURIGANA_REGEX}/) do |match|
+    doc.content = doc.content.gsub(/#{block_regex}|#{raw_regex}|#{MinimalMistakesPlus::FURIGANA_REGEX}/) do |match|
       if match.match?(/\A[ \t]*(?:#\+|\{%)/)
         match
       else
@@ -223,34 +219,6 @@ module Jekyll
             first_block.add_previous_sibling(p_node)
             leading_nodes.each { |n| p_node.add_child(n) }
           end
-        end
-      end
-
-      # Furigana handling
-      # 1. Use XPath to filter out pre/code ancestors at the C-level (libxml2) for maximum speed.
-      # 2. Fast pre-filter using 'contains' so Ruby only processes nodes that actually have parentheses.
-      target_nodes = doc.xpath('.//text()[not(ancestor::pre or ancestor::code) and (contains(., "（") or contains(., "("))]')
-      target_nodes.each do |node|
-        content = node.content
-        if content.match?(Jekyll::FURIGANA_REGEX)
-          new_html = content.gsub(Jekyll::FURIGANA_REGEX) do |match|
-            raw_base = $1
-            raw_ruby = $2
-            clean_base = raw_base.gsub(/\s+/, '')
-            clean_ruby = raw_ruby.gsub(/\s+/, '')
-            bases = clean_base.split('|')
-            rubies = clean_ruby.split('|')
-
-            if bases.length == rubies.length
-              ruby_content = bases.zip(rubies).map { |b, r| "#{b}<rt>#{r}</rt>" }.join('')
-              "<ruby>#{ruby_content}</ruby>"
-            else
-              base = clean_base.delete('|')
-              rb = clean_ruby.delete('|')
-              "<ruby>#{base}<rt>#{rb}</rt></ruby>"
-            end
-          end
-          node.replace(Nokogiri::HTML::DocumentFragment.parse(new_html)) if new_html != content
         end
       end
 

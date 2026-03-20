@@ -299,39 +299,26 @@ Hello
 
 TODO: How to use notice on multiple paragraphs:
 
-#+begin_html
+#+begin_src org
+,#+begin_html
 <div class="notice--warning" markdown="1">
 It seems ~bundle install~ in GitHub Actions' =build_and_deploy= workflow of
 ~josephs-blog~ doesn’t pull the latest code from =minimal-mistakes-plus=
 automatically with the setup:
 
-#+begin_src ruby
+,#+begin_src ruby
 gem "minimal-mistakes-plus", github: "josephtesfaye/minimal-mistakes-plus", branch: "main"
-#+end_src
+,#+end_src
 
 It still uses the old commit as indicated by the line:
 
-#+begin_src text
+,#+begin_src text
 Using minimal-mistakes-plus 0.1.0 from https://github.com/josephtesfaye/minimal-mistakes-plus.git (at main@70a94f2)
-#+end_src
+,#+end_src
 
 which is the same as shown in =Gemfile.lock= of =josephs-blog=. Does this mean I
 have to run ~bundle install~ and commit the updated ~Gemfile.lock~ in order to use
 the latest code? Can you make it pull in the latest code automatically?
 </div>
-#+end_html
-
-* Furigana
-
-You can write furigana for Japanese Kanji words like the following:
-
-#+begin_src text
-本|日（ほん|じつ）はお時|間（じ|かん）をいただき、ありがとうございます。私はマカ
-オにあるマカオ理|工|大|学（り|こう|だい|がく）を4年|制（ねん|せい）の学|士（が
-く|し）課|程（か|てい）で卒業（そつ|ぎょう）しました。
+,#+end_html
 #+end_src
-
-本|日（ほん|じつ）はお時|間（じ|かん）をいただき、ありがとうございます。私はマカ
-オにあるマカオ理|工|大|学（り|こう|だい|がく）を4年|制（ねん|せい）の学|士（が
-く|し）課|程（か|てい）で卒業（そつ|ぎょう）しました。
-

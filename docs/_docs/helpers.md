@@ -1,6 +1,6 @@
 ---
-title: "Link Abbreviations in Markdown"
-permalink: /docs/link-abbr-md/
+title: "Helpers in Markdown"
+permalink: /docs/helpers-md/
 last_modified_at: 2026-03-17
 toc: true
 toc_sticky: true
@@ -22,6 +22,8 @@ gallery3:
   - image_path: foo2:unsplash-gallery-image-1.jpg
   - foo2:unsplash-gallery-image-1.jpg
 ---
+
+# Link Abbreviations
 
 Here are demos of link abbreviations used in Markdown. The creation of link
 abbreviations is the same as in [Org Mode]({{ site.baseurl }}/docs/link-abbr/).
@@ -91,6 +93,8 @@ All the link forms shown above can be expanded correctly to the same image path:
 
 {% include gallery id="gallery2" columns=6 caption="A gallery using link abbreviations " %}
 
+# Loading Local Files
+
 A gallery loading local files:
 
 {% raw %}
@@ -113,3 +117,17 @@ gallery3:
 {% endraw %}
 
 {% include gallery id="gallery3" columns=6 caption="A gallery using link abbreviations " %}
+
+# Furigana
+
+You can write furigana for Japanese Kanji words like the following:
+
+``` text
+本｜日（ほん｜じつ）はお時｜間（じ｜かん）をいただき、ありがとうございます。私は
+マカオにあるマカオ理｜工｜大｜学（り｜こう｜だい｜がく）を4年｜制（ねん｜せい）
+の学｜士（がく｜し）課｜程（か｜てい）で卒業（そつ｜ぎょう）しました。
+```
+
+本｜日（ほん｜じつ）はお時｜間（じ｜かん）をいただき、ありがとうございます。私は
+マカオにあるマカオ理｜工｜大｜学（り｜こう｜だい｜がく）を4年｜制（ねん｜せい）
+の学｜士（がく｜し）課｜程（か｜てい）で卒業（そつ｜ぎょう）しました。

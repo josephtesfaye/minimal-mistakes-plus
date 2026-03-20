@@ -38,7 +38,12 @@ gallery3:
   - [[foo2:unsplash-gallery-image-1.jpg]]
 ---
 
-** Gallery
+Helpers that facilitate the composing of posts for both Org Mode and Markdown.
+
+Click [here]({{ site.baseurl }}/docs/helpers-md/) to view the contents supported
+or customized for Markdown.
+
+* Gallery
 
 You can create a gallery as usual in [[https://mmistakes.github.io/minimal-mistakes/docs/helpers/#gallery][Minimal Mistakes]]. With this plugin you have
 these extra features:
@@ -111,7 +116,7 @@ gallery:
 
 {% include gallery columns=6 caption="My custom gallery" %}
 
-** Link Abbreviations
+* Link Abbreviations
 #+LINK: foo https://i.postimg.cc/Vv8jFw8D/
 
 You can use link abbreviations in a document drafted in Markdown or Org Mode,
@@ -150,7 +155,7 @@ link_abbrs:
 
 Below are the supported use cases of link abbreviations.
 
-*** Standard Org Links
+** Standard Org Links
 
 Here is an image:
 
@@ -160,7 +165,7 @@ Here is an image:
 
 [[foo:unsplash-gallery-image-1.jpg]]
 
-*** Figure
+** Figure
 
 Links written in Liquid syntax are also supported. For example, here is a
 figure:
@@ -175,7 +180,7 @@ alt="" caption="A figure" %}
 {% include figure image_path="foo:unsplash-gallery-image-1.jpg" popup=true
 alt="" caption="A figure" %}
 
-*** Gallery
+** Gallery
 
 You can create a gallery as usual in [[https://mmistakes.github.io/minimal-mistakes/docs/helpers/#gallery][Minimal Mistakes]]. The extra benefit is that
 now you can use link abbreviations in it, like this:
@@ -205,12 +210,7 @@ All the link forms shown above can be expanded correctly to the same image path:
 
 {% include gallery id="gallery2" columns=6 caption="A gallery using link abbreviations " %}
 
-*** Markdown
-
-See [Link Abbreviations for Markdown]({{ site.baseurl }}/docs/link-abbr-md/) for
-demos in Markdown.
-
-** Loading Local Files
+* Loading Local Files
 
 When running locally you can load resources on your computer by using symlinks.
 Why symlinks? Because modern browsers block pages from =http(s)://…= from loading
@@ -277,3 +277,17 @@ gallery3:
 {% endraw %}
 
 {% include gallery id="gallery3" columns=6 caption="A gallery using symlinks" %}
+
+* Furigana
+
+You can write furigana for Japanese Kanji words like the following:
+
+#+begin_src text
+本｜日（ほん｜じつ）はお時｜間（じ｜かん）をいただき、ありがとうございます。私は
+マカオにあるマカオ理｜工｜大｜学（り｜こう｜だい｜がく）を4年｜制（ねん｜せい）
+の学｜士（がく｜し）課｜程（か｜てい）で卒業（そつ｜ぎょう）しました。
+#+end_src
+
+本｜日（ほん｜じつ）はお時｜間（じ｜かん）をいただき、ありがとうございます。私は
+マカオにあるマカオ理｜工｜大｜学（り｜こう｜だい｜がく）を4年｜制（ねん｜せい）
+の学｜士（がく｜し）課｜程（か｜てい）で卒業（そつ｜ぎょう）しました。
