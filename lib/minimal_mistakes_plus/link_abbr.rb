@@ -75,10 +75,14 @@ module MinimalMistakesPlus
       abbrs
     end
 
-    def self.build_full_url(base_url, path)
+    def self.build_full_url(base_url, path, inject_liquid: true)
       escaped_path = Addressable::URI.escape(base_url + path)
-      prefix = base_url.start_with?("/assets") ? "{{ site.url }}{{ site.baseurl }}" : ""
-      "#{prefix}#{escaped_path}"
+      if inject_liquid
+        prefix = base_url.start_with?("/assets") ? "{{ site.url }}{{ site.baseurl }}" : ""
+        "#{prefix}#{escaped_path}"
+      else
+        escaped_path
+      end
     end
 
     # --- 2. PROTECTING LITERAL BLOCKS ---
@@ -146,7 +150,7 @@ module MinimalMistakesPlus
 
     def self.expand_liquid_attributes(doc, abbrs, keys_regex)
       doc.content = doc.content.gsub(/(image_path|url)="(#{keys_regex}):([^"]+)"/) do
-        "#{$1}=\"#{build_full_url(abbrs[$2], $3)}\""
+        "#{::Regexp.last_match(1)}=\"#{build_full_url(abbrs[::Regexp.last_match(2)], ::Regexp.last_match(3), inject_liquid: false)}\""
       end
     end
 
@@ -180,7 +184,7 @@ module MinimalMistakesPlus
 
               if val_clean =~ /^(#{keys_regex}):(.*)$/
                 # FIX: Never re-wrap URL fields to prevent Addressable::URI crashes in Liquid
-                item[attr] = build_full_url(abbrs[::Regexp.last_match(1)], ::Regexp.last_match(2))
+                item[attr] = build_full_url(abbrs[::Regexp.last_match(1)], ::Regexp.last_match(2), inject_liquid: false)
               end
             end
 
@@ -195,7 +199,7 @@ module MinimalMistakesPlus
             val_clean = item.sub(/^\[\[(.*)\]\]$/, '\\1')
             if val_clean =~ /^(#{keys_regex}):(.*)$/
               # FIX: Never re-wrap raw URL strings to prevent Addressable::URI crashes in Liquid
-              build_full_url(abbrs[::Regexp.last_match(1)], ::Regexp.last_match(2))
+              build_full_url(abbrs[::Regexp.last_match(1)], ::Regexp.last_match(2), inject_liquid: false)
             else
               raw_item
             end
@@ -227,8 +231,7 @@ module MinimalMistakesPlus
 
               val = item[attr].to_s
               if val =~ /^(#{keys_regex}):(.*)$/
-                item[attr] =
-                  build_full_url(abbrs[::Regexp.last_match(1)], ::Regexp.last_match(2))
+                item[attr] = build_full_url(abbrs[::Regexp.last_match(1)], ::Regexp.last_match(2), inject_liquid: false)
               end
             end
 
@@ -241,7 +244,7 @@ module MinimalMistakesPlus
             item
           elsif item.is_a?(String)
             if item =~ /^(#{keys_regex}):(.*)$/
-              build_full_url(abbrs[::Regexp.last_match(1)], ::Regexp.last_match(2))
+              build_full_url(abbrs[::Regexp.last_match(1)], ::Regexp.last_match(2), inject_liquid: false)
             else
               raw_item
             end

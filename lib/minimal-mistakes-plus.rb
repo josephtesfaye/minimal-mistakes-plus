@@ -8,6 +8,7 @@ require_relative "minimal_mistakes_plus/dark_mode"
 require_relative "minimal_mistakes_plus/style_injector"
 require_relative "minimal_mistakes_plus/link_abbr"
 require_relative "minimal_mistakes_plus/liquify"
+require_relative "minimal_mistakes_plus/symlink_external_assets"
 
 module MinimalMistakesPlus
   class Error < StandardError; end

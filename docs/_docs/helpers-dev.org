@@ -134,3 +134,9 @@ Related articles:
 - [Enabling Link Abbreviations in Minimal Mistakes]({{site.url}}/blog/web/link-abbr/)
 - [Enabling Drafting in Org Mode in Minimal Mistakes](/blog/web/enable-org-mode/#configurations-links-link-abbreviations)
 - [User Guide: Link Abbreviations]({{ site.baseurl }}/docs/helpers/#link-abbreviations)
+
+** Loading Local Files
+
+Related articles:
+
+- [Loading Local Images in Minimal Mistakes]({{site.url}}/blog/web/local-images/)

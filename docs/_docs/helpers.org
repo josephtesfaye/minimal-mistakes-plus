@@ -4,8 +4,11 @@ permalink: /docs/helpers/
 last_modified_at: 2026-03-20
 toc: true
 toc_sticky: true
+symlinks:
+  - /assets/archive/image/foo ~/Downloads/temp/archive/image/foo
 link_abbrs:
   - link_abbr: foo https://i.postimg.cc/Vv8jFw8D/
+  - link_abbr: foo2 /assets/archive/image/foo/
 gallery:
   - image_path: foo:unsplash-gallery-image-1.jpg
     alt: "Use alt for title and a link abbreviation."
@@ -23,6 +26,16 @@ gallery2:
     title: An image referenced through an org link
   - [[foo:unsplash-gallery-image-1.jpg]]
   - [[foo:unsplash-gallery-image-1.jpg]]
+gallery3:
+  - url: foo2:unsplash-gallery-image-1.jpg
+    image_path: foo2:unsplash-gallery-image-1.jpg
+    title: Here is a [link]({{ site.baseurl }}/docs/dark-mode/) in title.
+  - image_path: foo2:unsplash-gallery-image-1.jpg
+  - foo2:unsplash-gallery-image-1.jpg
+  - image_path: [[foo2:unsplash-gallery-image-1.jpg]]
+    title: An image referenced through an org link
+  - [[foo2:unsplash-gallery-image-1.jpg]]
+  - [[foo2:unsplash-gallery-image-1.jpg]]
 ---
 
 ** Gallery
@@ -170,6 +183,8 @@ now you can use link abbreviations in it, like this:
 {% raw %}
 #+begin_src org
 ---
+link_abbrs:
+  - link_abbr: foo https://i.postimg.cc/Vv8jFw8D/
 gallery2:
   - url: foo:unsplash-gallery-image-1.jpg
     image_path: foo:unsplash-gallery-image-1.jpg
@@ -195,3 +210,70 @@ All the link forms shown above can be expanded correctly to the same image path:
 See [Link Abbreviations for Markdown]({{ site.baseurl }}/docs/link-abbr-md/) for
 demos in Markdown.
 
+** Loading Local Files
+
+When running locally you can load resources on your computer by using symlinks.
+Why symlinks? Because modern browsers block pages from =http(s)://…= from loading
+local files via ~file://…~ for security (“cross-origin” / local file access).
+
+Follow the steps to use this feature:
+
+1. Create a symlink to the target data in the ~symlinks:~ array in the front
+   matter:
+
+   #+begin_src org
+   ---
+   symlinks:
+     - /assets/archive/image/foo ~/Downloads/temp/archive/image/foo
+   ---
+   #+end_src
+
+   This creates the symlink =_site/assets/archive/image/foo= inside the site root,
+   which points to the path =~/Downloads/temp/archive/image/foo/= on your
+   computer.
+
+2. Then you can refer to the files inside that path like this:
+
+   {% raw %}
+   #+begin_src markdown
+   ---
+   gallery:
+     - url: /assets/archive/image/foo/20260218184820.png
+       image_path: /assets/archive/image/foo/20260218184820.png
+     - url: /assets/archive/image/foo/20260218184820.png
+       image_path: /assets/archive/image/foo/20260218184820.png
+   ---
+
+   ![]({{site.url}}{{site.baseurl}}/assets/archive/image/foo/20260218184820.png)
+
+   {% include gallery %}
+   #+end_src
+   {% endraw %}
+
+You can even create a link abbreviation to the symlink. For example, here is a
+gallery loading local files:
+
+{% raw %}
+#+begin_src org
+---
+symlinks:
+  - /assets/archive/image/foo ~/Downloads/temp/archive/image/foo
+link_abbrs:
+  - link_abbr: foo2 /assets/archive/image/foo/
+gallery3:
+  - url: foo2:unsplash-gallery-image-1.jpg
+    image_path: foo2:unsplash-gallery-image-1.jpg
+    title: Here is a [link]({{ site.baseurl }}/docs/dark-mode/) in title.
+  - image_path: foo2:unsplash-gallery-image-1.jpg
+  - foo2:unsplash-gallery-image-1.jpg
+  - image_path: [[foo2:unsplash-gallery-image-1.jpg]]
+    title: An image referenced through an org link
+  - [[foo2:unsplash-gallery-image-1.jpg]]
+  - [[foo2:unsplash-gallery-image-1.jpg]]
+---
+
+{% include gallery id="gallery3" columns=6 caption="A gallery using symlinks" %}
+#+end_src
+{% endraw %}
+
+{% include gallery id="gallery3" columns=6 caption="A gallery using symlinks" %}

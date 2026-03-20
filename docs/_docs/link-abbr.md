@@ -4,14 +4,23 @@ permalink: /docs/link-abbr-md/
 last_modified_at: 2026-03-17
 toc: true
 toc_sticky: true
+symlinks:
+  - /assets/archive/image/foo ~/Downloads/temp/archive/image/foo
 link_abbrs:
   - link_abbr: foo https://i.postimg.cc/Vv8jFw8D/
-gallery:
+  - link_abbr: foo2 /assets/archive/image/foo/
+gallery2:
   - url: foo:unsplash-gallery-image-1.jpg
     image_path: foo:unsplash-gallery-image-1.jpg
     title: Here is a [link]({{ site.baseurl }}/docs/dark-mode/) in title.
   - image_path: foo:unsplash-gallery-image-1.jpg
   - foo:unsplash-gallery-image-1.jpg
+gallery3:
+  - url: foo2:unsplash-gallery-image-1.jpg
+    image_path: foo2:unsplash-gallery-image-1.jpg
+    title: Here is a [link]({{ site.baseurl }}/docs/dark-mode/) in title.
+  - image_path: foo2:unsplash-gallery-image-1.jpg
+  - foo2:unsplash-gallery-image-1.jpg
 ---
 
 Here are demos of link abbreviations used in Markdown. The creation of link
@@ -64,18 +73,43 @@ The extra benefit is that now you can use link abbreviations in it, like this:
 {% raw %}
 ``` markdown
 ---
-gallery:
+link_abbrs:
+  - link_abbr: foo https://i.postimg.cc/Vv8jFw8D/
+gallery2:
   - url: foo:unsplash-gallery-image-1.jpg
     image_path: foo:unsplash-gallery-image-1.jpg
-    title: Check this [image](foo:unsplash-gallery-image-1.jpg)
+    title: Here is a [link]({{ site.baseurl }}/docs/dark-mode/) in title.
   - image_path: foo:unsplash-gallery-image-1.jpg
   - foo:unsplash-gallery-image-1.jpg
 ---
 
-{% include gallery columns=6 caption="A gallery using link abbreviations " %}
+{% include gallery id="gallery2" columns=6 caption="A gallery using link abbreviations " %}
 ```
 {% endraw %}
 
 All the link forms shown above can be expanded correctly to the same image path:
 
-{% include gallery columns=6 caption="A gallery using link abbreviations " %}
+{% include gallery id="gallery2" columns=6 caption="A gallery using link abbreviations " %}
+
+A gallery loading local files:
+
+{% raw %}
+``` markdown
+---
+symlinks:
+  - /assets/archive/image/foo ~/Downloads/temp/archive/image/foo
+link_abbrs:
+  - link_abbr: foo2 /assets/archive/image/foo/
+gallery3:
+  - url: foo2:unsplash-gallery-image-1.jpg
+    image_path: foo2:unsplash-gallery-image-1.jpg
+    title: Here is a [link]({{ site.baseurl }}/docs/dark-mode/) in title.
+  - image_path: foo2:unsplash-gallery-image-1.jpg
+  - foo2:unsplash-gallery-image-1.jpg
+---
+
+{% include gallery id="gallery3" columns=6 caption="A gallery using link abbreviations " %}
+```
+{% endraw %}
+
+{% include gallery id="gallery3" columns=6 caption="A gallery using link abbreviations " %}
