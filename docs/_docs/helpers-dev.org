@@ -1,0 +1,136 @@
+---
+title: "Helpers"
+permalink: /docs/dev/helpers/
+last_modified_at: 2026-03-20
+toc: true
+toc_sticky: true
+sidebar:
+  - nav: docs-dev
+---
+
+** Gallery
+
+Here are the steps to make the changes:
+
+1. Copy the default gallery layout from the Minimal Mistakes gem (e.g.
+   =~/.gem/ruby/3.1.3/gems/minimal-mistakes-jekyll-4.26.0/_includes/gallery=) into
+   your local =_includes= directory.
+
+2. Apply these changes:
+
+   {% raw %}
+   #+begin_src diff
+   diff -u minimal-mistakes/_includes/gallery josephs-blog/_includes/gallery
+   --- minimal-mistakes/_includes/gallery	2023-12-15 19:03:51
+   +++ josephs-blog/_includes/gallery	2026-03-01 23:18:56
+   @@ -6,6 +6,8 @@
+
+    {% if include.layout %}
+      {% assign gallery_layout = include.layout %}
+   +{% elsif include.columns %}
+   +  {% assign gallery_layout = "custom-grid" %}
+    {% else %}
+      {% if gallery.size == 2 %}
+        {% assign gallery_layout = 'half' %}
+   @@ -16,6 +18,48 @@
+      {% endif %}
+    {% endif %}
+
+   +{% if include.columns %}
+   +
+   +<figure class="{{ gallery_layout }} {{ include.class }}"
+   +        style="grid-template-columns: repeat({{ include.columns }}, 1fr);">
+   +  {% for img in gallery %}
+   +    <figure>
+   +      <a {% if img.url %}
+   +           href="{{ img.url | relative_url }}"
+   +         {% elsif img.image_path %}
+   +           href="{{ img.image_path | relative_url }}"
+   +         {% else %}
+   +           href="{{ img | relative_url }}"
+   +         {% endif %}
+   +
+   +         {% if img.title %}
+   +         {% comment %} Parse Liquid syntax in titles {% endcomment %}
+   +           title="{{ img.title | liquify | markdownify | remove: '<p>' |
+   +                     remove: '</p>' | strip | newline_to_br | split: '<br />' |
+   +                     join: '</p><p>' | prepend: '<p>' | append: '</p>' |
+   +                     escape }}"
+   +         {% elsif img.alt %}
+   +           title="{{ img.alt }}"
+   +         {% endif %}>
+   +
+   +        <img {% if img.image_path %}
+   +               src="{{ img.image_path | relative_url }}"
+   +             {% else %}
+   +               src="{{ img | relative_url }}"
+   +             {% endif %}
+   +
+   +             alt="{% if img.alt %}{{ img.alt }}{% endif %}">
+   +      </a>
+   +    </figure>
+   +  {% endfor %}
+   +  {% if include.caption %}
+   +    <figcaption>{{ include.caption | markdownify | remove: "<p>" | remove: "</p>" }}</figcaption>
+   +  {% endif %}
+   +</figure>
+   +
+   +{% else %}
+   +
+   +<!-- Preserve the original style -->
+    <figure class="{{ gallery_layout }} {{ include.class }}">
+      {% for img in gallery %}
+        {% if img.url %}
+   @@ -33,3 +77,5 @@
+        <figcaption>{{ include.caption | markdownify | remove: "<p>" | remove: "</p>" }}</figcaption>
+      {% endif %}
+    </figure>
+   +
+   +{% endif %}
+   #+end_src
+   {% endraw %}
+
+3. Add these styles in your =assets/css/main.scss=:
+
+   #+begin_src css
+   // Enable more columns in a gallery
+   .page__content .custom-grid {
+     display: grid;
+     gap: 0.5em;
+   }
+
+   .custom-grid figure {
+     margin: 0;
+     width: 100%;
+   }
+
+   .custom-grid figcaption {
+     grid-column: 1 / -1;
+   }
+
+   .custom-grid img {
+     margin-bottom: 0;
+   }
+   #+end_src
+
+4. Create a new plugin file =_plugins/liquify.rb= to add a filter that evaluates
+   Liquid syntax inside front matter strings:
+
+   #+begin_src ruby
+   module Jekyll
+     module LiquifyFilter
+       def liquify(input)
+         Liquid::Template.parse(input.to_s).render(@context)
+       end
+     end
+   end
+   Liquid::Template.register_filter(Jekyll::LiquifyFilter)
+   #+end_src
+
+** Link Abbreviations
+
+Related articles:
+
+- [Enabling Link Abbreviations in Minimal Mistakes]({{site.url}}/blog/web/link-abbr/)
+- [Enabling Drafting in Org Mode in Minimal Mistakes](/blog/web/enable-org-mode/#configurations-links-link-abbreviations)
+- [User Guide: Link Abbreviations]({{ site.baseurl }}/docs/helpers/#link-abbreviations)

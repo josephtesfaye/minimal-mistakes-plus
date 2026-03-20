@@ -1,0 +1,10 @@
+---
+title: "Developer Guide"
+permalink: /docs/dev//
+last_modified_at: 2026-03-20
+toc: true
+sidebar:
+  - nav: docs-dev
+---
+
+Here's how the features of Minimal Mistakes Plus are implemented.

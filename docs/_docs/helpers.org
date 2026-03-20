@@ -7,9 +7,16 @@ toc_sticky: true
 link_abbrs:
   - link_abbr: foo https://i.postimg.cc/Vv8jFw8D/
 gallery:
+  - image_path: foo:unsplash-gallery-image-1.jpg
+    alt: "Use alt for title and a link abbreviation."
+  - image_path: foo:unsplash-gallery-image-1.jpg
+    title: "Link to post: [Dark Mode]({{ site.baseurl }}/docs/dark-mode/)"
+  - foo:https://i.postimg.cc/Vv8jFw8D/unsplash-gallery-image-1.jpg
+  - foo:unsplash-gallery-image-1.jpg
+gallery2:
   - url: foo:unsplash-gallery-image-1.jpg
     image_path: foo:unsplash-gallery-image-1.jpg
-    title: Check this [[foo:unsplash-gallery-image-1.jpg][image]]
+    title: Here is a [link]({{ site.baseurl }}/docs/dark-mode/) in title.
   - image_path: foo:unsplash-gallery-image-1.jpg
   - foo:unsplash-gallery-image-1.jpg
   - image_path: [[foo:unsplash-gallery-image-1.jpg]]
@@ -17,6 +24,79 @@ gallery:
   - [[foo:unsplash-gallery-image-1.jpg]]
   - [[foo:unsplash-gallery-image-1.jpg]]
 ---
+
+** Gallery
+
+You can create a gallery as usual in [[https://mmistakes.github.io/minimal-mistakes/docs/helpers/#gallery][Minimal Mistakes]]. With this plugin you have
+these extra features:
+
+1. Add a ~columns~ parameter to each gallery to control the columns of a gallery
+   such as:
+
+   {% raw %}
+   #+begin_src text
+   {% include gallery columns=6 %}
+   #+end_src
+   {% endraw %}
+
+   The image size should be adjusted automatically.
+
+2. Support adding images to a gallery by only using the ~image_path~ parameter or
+   the URL in the front matter such as:
+
+   #+begin_src text
+   gallery:
+     - image_path: /assets/archive/image/foo/unsplash-gallery-image-1.jpg
+     - /assets/archive/image/foo/unsplash-gallery-image-1.jpg
+     - /assets/archive/image/foo/unsplash-gallery-image-1.jpg
+   #+end_src
+
+   A gallery originally requires both ~url~ and ~image_path~ in order to have a
+   pop-up view of the images. This plugin just makes it more convenient to add
+   images to a gallery. But you can still stick to the old method.
+
+3. Support link abbreviations in image paths. See this [[#link-abbreviations][designated section]] for
+   more details.
+
+4. Use ~alt~ for ~title~ if ~title~ is unspecified so you don't need to write the same
+   content for two parameters.
+
+5. Support Liquid links in ~title~, e.g.,
+
+   {% raw %}
+   #+begin_src text
+   ---
+   gallery:
+     - image_path: https://i.postimg.cc/Vv8jFw8D/unsplash-gallery-image-1.jpg
+       title: "Prompt: [Local images]({{ site.baseurl }}{% post_url 2026-02-19-local-images %})"
+   ---
+   #+end_src
+   {% endraw %}
+
+All these customizations are backward-compatible, that is, you can still write a
+gallery in the original way to get the original feel.
+
+Here's a gallery demo utilizing the above features:
+
+{% raw %}
+#+begin_src text
+---
+link_abbrs:
+  - link_abbr: foo https://i.postimg.cc/Vv8jFw8D/
+gallery:
+  - image_path: foo:unsplash-gallery-image-1.jpg
+    alt: "Use alt for title and a link abbreviation."
+  - image_path: foo:unsplash-gallery-image-1.jpg
+    title: "Link to post: [Dark Mode]({{ site.baseurl }}/docs/dark-mode/)"
+  - foo:https://i.postimg.cc/Vv8jFw8D/unsplash-gallery-image-1.jpg
+  - foo:unsplash-gallery-image-1.jpg
+---
+
+{% include gallery columns=6 caption="My custom gallery" %}
+#+end_src
+{% endraw %}
+
+{% include gallery columns=6 caption="My custom gallery" %}
 
 ** Link Abbreviations
 #+LINK: foo https://i.postimg.cc/Vv8jFw8D/
@@ -90,7 +170,7 @@ now you can use link abbreviations in it, like this:
 {% raw %}
 #+begin_src org
 ---
-gallery:
+gallery2:
   - url: foo:unsplash-gallery-image-1.jpg
     image_path: foo:unsplash-gallery-image-1.jpg
     title: Check this [[foo:unsplash-gallery-image-1.jpg][image]]
@@ -102,15 +182,16 @@ gallery:
   - [[foo:unsplash-gallery-image-1.jpg]]
 ---
 
-{% include gallery columns=6 caption="A gallery using link abbreviations " %}
+{% include gallery id="gallery2" columns=6 caption="A gallery using link abbreviations " %}
 #+end_src
 {% endraw %}
 
 All the link forms shown above can be expanded correctly to the same image path:
 
-{% include gallery columns=6 caption="A gallery using link abbreviations " %}
+{% include gallery id="gallery2" columns=6 caption="A gallery using link abbreviations " %}
 
 *** Markdown
 
 See [Link Abbreviations for Markdown]({{ site.baseurl }}/docs/link-abbr-md/) for
 demos in Markdown.
+

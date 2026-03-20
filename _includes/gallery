@@ -1,0 +1,81 @@
+{% if include.id %}
+  {% assign gallery = page[include.id] %}
+{% else %}
+  {% assign gallery = page.gallery %}
+{% endif %}
+
+{% if include.layout %}
+  {% assign gallery_layout = include.layout %}
+{% elsif include.columns %}
+  {% assign gallery_layout = "custom-grid" %}
+{% else %}
+  {% if gallery.size == 2 %}
+    {% assign gallery_layout = 'half' %}
+  {% elsif gallery.size >= 3 %}
+    {% assign gallery_layout = 'third' %}
+  {% else %}
+    {% assign gallery_layout = '' %}
+  {% endif %}
+{% endif %}
+
+{% if include.columns %}
+
+<figure class="{{ gallery_layout }} {{ include.class }}"
+        style="grid-template-columns: repeat({{ include.columns }}, 1fr);">
+  {% for img in gallery %}
+    <figure>
+      <a {% if img.url %}
+           href="{{ img.url | relative_url }}"
+         {% elsif img.image_path %}
+           href="{{ img.image_path | relative_url }}"
+         {% else %}
+           href="{{ img | relative_url }}"
+         {% endif %}
+
+         {% if img.title %}
+         {% comment %} Parse Liquid syntax in titles {% endcomment %}
+           title="{{ img.title | liquify | markdownify | remove: '<p>' |
+                     remove: '</p>' | strip | newline_to_br | split: '<br />' |
+                     join: '</p><p>' | prepend: '<p>' | append: '</p>' |
+                     escape }}"
+         {% elsif img.alt %}
+           title="{{ img.alt }}"
+         {% endif %}>
+
+        <img {% if img.image_path %}
+               src="{{ img.image_path | relative_url }}"
+             {% else %}
+               src="{{ img | relative_url }}"
+             {% endif %}
+
+             alt="{% if img.alt %}{{ img.alt }}{% endif %}">
+      </a>
+    </figure>
+  {% endfor %}
+  {% if include.caption %}
+    <figcaption>{{ include.caption | markdownify | remove: "<p>" | remove: "</p>" }}</figcaption>
+  {% endif %}
+</figure>
+
+{% else %}
+
+<!-- Preserve the original style -->
+<figure class="{{ gallery_layout }} {{ include.class }}">
+  {% for img in gallery %}
+    {% if img.url %}
+      <a href="{{ img.url | relative_url }}"
+        {% if img.title %}title="{{ img.title }}"{% endif %}>
+          <img src="{{ img.image_path | relative_url }}"
+               alt="{% if img.alt %}{{ img.alt }}{% endif %}">
+      </a>
+    {% else %}
+      <img src="{{ img.image_path | relative_url }}"
+           alt="{% if img.alt %}{{ img.alt }}{% endif %}">
+    {% endif %}
+  {% endfor %}
+  {% if include.caption %}
+    <figcaption>{{ include.caption | markdownify | remove: "<p>" | remove: "</p>" }}</figcaption>
+  {% endif %}
+</figure>
+
+{% endif %}

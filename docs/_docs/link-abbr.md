@@ -9,7 +9,7 @@ link_abbrs:
 gallery:
   - url: foo:unsplash-gallery-image-1.jpg
     image_path: foo:unsplash-gallery-image-1.jpg
-    title: Check this [[foo:unsplash-gallery-image-1.jpg][image]]
+    title: Here is a [link]({{ site.baseurl }}/docs/dark-mode/) in title.
   - image_path: foo:unsplash-gallery-image-1.jpg
   - foo:unsplash-gallery-image-1.jpg
 ---

@@ -1,6 +1,8 @@
 main:
   - title: "User Guide"
     url: /docs/quick-start-guide/
+  - title: "Developer Guide"
+    url: /docs/dev/
 
 docs:
   - title: Getting Started
@@ -17,3 +19,17 @@ docs:
         url: /docs/org-mode/
       - title: "Helpers"
         url: /docs/helpers/
+
+docs-dev:
+  - title: Getting Started
+    url: /docs/dev/
+  - title: Customization
+    children:
+      - title: "Dark Mode"
+        url: /docs/dev/dark-mode/
+  - title: Content
+    children:
+      - title: "Org Mode"
+        url: /docs/dev/org-mode/
+      - title: "Helpers"
+        url: /docs/dev/helpers/
