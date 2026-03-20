@@ -297,8 +297,10 @@ put the English above the Katakana word just like furigana. For example:
 
 #+begin_src text
 クラウド（cloud）ネイティブ（native）なマルチテナント（multi-tenant）型バックエ
-ンド（backend）プラットフォーム（platform）の設計
+ンド（backend）プラットフォーム（platform）の設計、クラウドプラットフォーム
+（cloud platform）、モビリティサービス（mobility service）
 #+end_src
 
 クラウド（cloud）ネイティブ（native）なマルチテナント（multi-tenant）型バックエ
-ンド（backend）プラットフォーム（platform）の設計
+ンド（backend）プラットフォーム（platform）の設計、クラウドプラットフォーム
+（cloud platform）、モビリティサービス（mobility service）
