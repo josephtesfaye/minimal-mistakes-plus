@@ -30,7 +30,7 @@ Then you use a single, secure master password to decrypt the contents.
 
 {% include figure image_path="https://i.postimg.cc/SR6nWCGF/Screenshot-2026-03-20-at-20-23-04.png" popup=true %}
 
-** Use the Two-Repository Strategy (Free, GitHub-Only)
+* Use the Two-Repository Strategy (Free, GitHub-Only)
 
 If you are on a free GitHub account but want to keep using GitHub Pages, you can
 separate your raw source files from your generated HTML using two repositories
@@ -63,7 +63,7 @@ Access Token (PAT):
 This way, anyone looking at Repo B only sees the final compiled web pages, while
 your source files safely remain in your private Repo A.
 
-*** The Local Workflow (Repo A)
+** The Local Workflow (Repo A)
 
 Make sure you stop tracking the built site entirely in your source repository.
 
@@ -73,7 +73,7 @@ Make sure you stop tracking the built site entirely in your source repository.
 3. You never run ~git commit~ inside the =_site= folder. You only commit your source
    Markdown, Org files, and configurations to Repo A.
 
-*** Create and serving Repo B
+** Create and serving Repo B
 
 Now you can create a new repository (Repo B) on GitHub to host the static =_site=
 contents.
@@ -132,7 +132,7 @@ HTML.
    will be live at https://your-username.github.io/your-public-repo-B/ (or your
    custom domain, if you add one in the Pages settings).
 
-*** The Deployment Bridge (GitHub Actions)
+** The Deployment Bridge (GitHub Actions)
 
 When you push your source code to the private Repo A, a GitHub Action spins up,
 builds the site in a clean cloud environment, and pushes the resulting HTML
@@ -219,8 +219,7 @@ files.
 Repo B's history will strictly be clean, automated deployment commits, while
 Repo A retains your actual human commit history and draft iterations.
 
-
-** Use a single, secure master password
+* Use a single, secure master password
 
 You will store the password as a GitHub Secret for your automated deployments,
 and pass it inline when testing locally.
@@ -261,7 +260,7 @@ and pass it inline when testing locally.
    export BLOG_PASSWORD="your_master_password"
    #+end_src
 
-** Use in Front Matter
+* Use in Front Matter
 
 Now, you can define your visibility state across your Markdown or Org files
 effortlessly.

@@ -25,8 +25,8 @@ such as the following:
 The following contents demonstrate the basic Org Mode elements and the extra
 features aforementioned.
 
-** Headings
-*** Custom ID
+* Headings
+** Custom ID
 :PROPERTIES:
 :CUSTOM_ID: 20260301173459
 :END:
@@ -35,7 +35,7 @@ In Markdown you can write the attribute syntax ~{: id="your-custom-id"}~ to assi
 a custom ID to a heading. In Org you can achieve the same by using the
 conventional ~CUSTOM_ID~ in a property drawer.
 
-*** Topdown IDs and ID Deduplication
+** Topdown IDs and ID Deduplication
 
 By default, heading ~id~-s are generated automatically by transforming the heading
 to a hyphenated string. By adding ~heading_ids: topdown~ in the front matter you
@@ -62,80 +62,109 @@ ID is found, a number will be appended incrementally.
 
 However, ~CUSTOM_ID~ is never affected.
 
-*** Heading Numbering
-Headings can be numbered automatically. You can give numbers to all headings of
-a post or only the headings of a subtree:
+** Auto Numbering
 
-- For all headings: Add ~ordered: true~ to the front matter of the post.
+Headings can be numbered automatically for the whole document or only a subtree.
+To enable this add use either of the following methods:
+
+- For all headings: Add ~ordered: true~ to the front matter of the page.
 - For all headings under a subtree: Add the attribute ~{: .ordered}~ right under a
-  heading. All of its sub-headings will be numbered. For example:
+  subtree heading. All of its sub-headings will be numbered.
 
-  #+begin_src org
-  ,*** Headings A
-  {: .ordered}
-  ,**** Heading 1
-  ,***** Heading 1.1
-  ,****** Heading 1.1.1
-  ,***** Heading 1.2
-  ,**** Heading 2
-  ,***** Heading 2.1
+The numbers appear in both the page content and the table of contents.
 
-  ,*** Headings B
-  ,**** Heading B1
-  {: .ordered}
-  ,***** Heading B1.1
-  ,****** Heading B1.1.1
-  ,***** Heading B1.2
-  ,**** Heading B2
-  ,***** Heading B2.1
-  #+end_src
-
-  Output:
-
-  #+begin_src text
-  ,* Headings
-  ,** Headings A
-  1. Heading 1
-  1.1. Heading 1.1
-  1.1.1. Heading 1.1.1
-  1.2. Heading 1.2
-  2. Heading 2
-  2.1. Heading 2.1
-  ,** Headings B
-  ,*** Heading 1
-  1. Heading 1.1
-  1.1. Heading 1.1.1
-  2. Heading 1.2
-  ,*** Heading 2
-  ,**** Heading 2.1
-  #+end_src
-
-  If a heading is marked with the ~{: .ordered}~ attribute the numbering for its
-  sub-headings should always start from ~1~ regardless of its level in the
-  document or its position relative its siblings.
+If a heading is marked with ~{: .ordered}~ the numbering of its sub-headings
+always starts from =1.= regardless of its level in the document or its position
+relative its siblings.
 
 If both ~ordered: true~ and ~{: .ordered}~ are present for a heading, the rules of
-the latter should override the former.
+the latter override those of the former.
 
-**** Heading A
+For example:
+
+#+begin_src org
+---
+title: "Numbering All Headings"
+permalink: /docs/headings/
+toc: true
+ordered: true
+---
+
+,* Heading 1
+,** Heading 2
+,*** Heading 3
+,**** Heading 4
+,***** Heading 5
+,****** Heading 6
+,* Heading 1
+,** Heading 2
+,*** Heading 3
+,**** Heading 4
+,***** Heading 5
+,****** Heading 6
+#+end_src
+
+becomes:
+
+#+begin_src text
+1. Heading 1
+1.1. Heading 2
+1.1.1. Heading 3
+1.1.1.1. Heading 4
+1.1.1.1.1. Heading 5
+1.1.1.1.1.1. Heading 6
+2. Heading 1
+2.1. Heading 2
+2.1.1. Heading 3
+2.1.1.1. Heading 4
+2.1.1.1.1. Heading 5
+2.1.1.1.1.1. Heading 6
+#+end_src
+
+And this:
+
+#+begin_src org
+---
+title: "Numbering Subtrees"
+permalink: /docs/headings/
+toc: true
+---
+
+,* Heading 1
 {: .ordered}
-***** Heading 1
-****** Heading 1.1
-******* Heading 1.1.1
-****** Heading 1.2
-***** Heading 2
-****** Heading 2.1
-
-**** Heading B
-***** Heading B1
+,** Heading 2
+,*** Heading 3
+,**** Heading 4
 {: .ordered}
-****** Heading B1.1
-******* Heading B1.1.1
-****** Heading B1.2
-***** Heading B2
-****** Heading B2.1
+,***** Heading 5
+,****** Heading 6
+,* Heading 1
+,** Heading 2
+,*** Heading 3
+{: .ordered}
+,**** Heading 4
+,***** Heading 5
+,****** Heading 6
+#+end_src
 
-** Tables
+becomes:
+
+#+begin_src text
+,* Heading 1
+1. Heading 2
+1.1. Heading 3
+1.1.1. Heading 4
+      1. Heading 5
+      1.1. Heading 6
+,* Heading 1
+,** Heading 2
+,*** Heading 3
+   1. Heading 4
+   1.1. Heading 5
+   1.1.1. Heading 6
+#+end_src
+
+* Tables
 
 Here is the morphological breakdown:
 
@@ -145,7 +174,7 @@ Here is the morphological breakdown:
 | -xyl-     | Greek (xylon)    | Wood                       |
 | -aceae    | Latin (Suffix)   | Belonging to the family of |
 
-** Lists
+* Lists
 
 An ordered list with multiple levels:
 
@@ -174,13 +203,17 @@ An ordered list with multiple levels:
 
 3. Third item
 
-** Links
+* Links
 In addition to standard Org links, =minimal-mistakes-plus= facilitates the
 composing of links in the following ways:
 
 - [Link Abbreviations]({{ site.baseurl }}/docs/helpers/#link-abbreviations)
 
-*** Link to a Post
+** TODO Link to a Post
+
+- Link to a page in the same project
+- Link to a page in another project
+- Link to a page using org links
 
 {% raw %}
 #+begin_src org
@@ -188,9 +221,7 @@ Link to a [post]({{ site.baseurl }}{% post_url 2026-02-20-custom-gallery %})
 #+end_src
 {% endraw %}
 
-- Link to a [[file:2026-02-20-custom-gallery.org][post]]
-
-** Images
+* Images
 
 A simple image:
 
@@ -211,7 +242,7 @@ A gallery (with [customization]({{ site.baseurl }}{% post_url 2026-02-20-custom-
 
 {% include gallery columns=6 caption="This is a gallery caption" %}
 
-** Code highlighting
+* Code highlighting
 
 Inline codes: ~print~, =hello=
 
@@ -242,7 +273,7 @@ Hello
 #+end_src
 {% endraw %}
 
-** Notices
+* Notices
 #+begin_src markdown
 {: .notice--warning}
 ,*Watch out!* This is a warning notice inside an Org file.
@@ -290,7 +321,7 @@ the latest code? Can you make it pull in the latest code automatically?
 </div>
 #+end_html
 
-** Furigana
+* Furigana
 
 You can write furigana for Japanese Kanji words like the following:
 
