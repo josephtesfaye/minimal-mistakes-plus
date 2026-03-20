@@ -1,0 +1,279 @@
+---
+title: "Content Encryption"
+permalink: /docs/encryption/
+last_modified_at: 2026-03-20
+toc: true
+ordered: true
+---
+
+To make a post "private" you have several natively supported keys to add to the
+post's front matter:
+
+- ~published: false~ —handled by Jekyll natively during its read phase—if a post
+  has this set, Jekyll completely ignores the file, meaning no HTML is ever
+  generated.
+- ~hidden: true~ —handled by Minimal Mistakes natively to exclude the post from
+  pagination loops and recent post lists. You can still visit the post via its
+  link.
+- ~search: false~ —handled by Minimal Mistakes to exclude a post from the search
+  index. It only works when the search engine is Lunr.
+
+Now with =minmal-mistakes-plus= you can enable true private posts by using the
+~encrypted:~ key in the front matter to control the encryption of a post. It takes
+the following values:
+
+- ~true~: Encrypt everything of the post, including the title, TOC, tags, etc.
+- ~false~: No encryption, the default when unset.
+- ~buttitle~: Encrypt everything but the title.
+
+Then you use a single, secure master password to decrypt the contents.
+
+{% include figure image_path="https://i.postimg.cc/SR6nWCGF/Screenshot-2026-03-20-at-20-23-04.png" popup=true %}
+
+** Use the Two-Repository Strategy (Free, GitHub-Only)
+
+If you are on a free GitHub account but want to keep using GitHub Pages, you can
+separate your raw source files from your generated HTML using two repositories
+and GitHub Actions.
+
+1. Create Repo A (Private): This holds your Jekyll source files (Markdown,
+   Org files, =_config.yml=, etc.).
+
+2. Create Repo B (Public): This will only hold the generated, static HTML site.
+
+3. Configure GitHub Actions in Repo A: You update your existing
+   =.github/workflows/jekyll.yml= file to build the site, but instead of deploying
+   to the local repository, it pushes the compiled =_site= folder directly to
+   Repo B.
+
+To do this, you would use an action like =peaceiris/actions-gh-pages= in your
+workflow. It allows deploying to an external repository by using a Personal
+Access Token (PAT):
+
+#+begin_src yaml
+- name: Deploy to external public repository
+  uses: peaceiris/actions-gh-pages@v3
+  with:
+    personal_token: ${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}
+    external_repository: your-username/your-public-repo-B
+    publish_branch: main
+    publish_dir: ./_site
+#+end_src
+
+This way, anyone looking at Repo B only sees the final compiled web pages, while
+your source files safely remain in your private Repo A.
+
+*** The Local Workflow (Repo A)
+
+Make sure you stop tracking the built site entirely in your source repository.
+
+1. Add =_site/= to the =.gitignore= file in Repo A.
+2. When writing posts or testing configurations, simply run ~bundle exec jekyll
+   serve~ on your computer.
+3. You never run ~git commit~ inside the =_site= folder. You only commit your source
+   Markdown, Org files, and configurations to Repo A.
+
+*** Create and serving Repo B
+
+Now you can create a new repository (Repo B) on GitHub to host the static =_site=
+contents.
+
+To serve your public site from Repo B using GitHub Pages, you need to configure
+it to act purely as a static file host. Since Repo A has already done the heavy
+lifting of building the Jekyll site, Repo B just needs to serve the finished
+HTML.
+
+1. Ensure Repo B is Public
+
+   If you are on a free GitHub account, Repo B must be set to Public. Go to
+   Settings > General in Repo B, scroll down to the "Danger Zone," and ensure
+   the repository visibility is public.
+
+2. Configure GitHub Pages
+
+   1) In Repo B, go to the Settings > Pages.
+   2) Under the Build and deployment section, set the Source dropdown to
+      Deploy from a branch.
+   3) Under the Branch section, select the branch that your GitHub Action
+      from Repo A is pushing to (usually main, master, or gh-pages).
+   4) Select the =/ (root)= folder.
+   5) Click Save.
+
+3. Bypass GitHub's Default Jekyll Build (Crucial)
+
+   By default, GitHub Pages assumes any repository is a raw Jekyll site and will
+   try to build it again. Since your site is already compiled by Repo A, running
+   it through Jekyll a second time can break your CSS, strip out folders that
+   start with an underscore (like =_page= or =_site=), or cause build failures.
+
+   To tell GitHub Pages to serve the files exactly as they are without
+   processing them, you need a file named =.nojekyll= (with no extension) in
+   the root of Repo B.
+
+   If you are using the =peaceiris/actions-gh-pages= action in Repo A (which we
+   are using in the following step), the action automatically generates and
+   includes the file for you by default, so you don't need to do anything
+   manually.
+
+   If you are using a different deployment method, make sure your workflow in
+   Repo A creates an empty =.nojekyll= file in the =_site= directory before pushing
+   it to Repo B. You can add a quick step in your workflow right before the
+   deployment step:
+
+   #+begin_src yaml
+         - name: Add .nojekyll file
+           run: touch ./_site/.nojekyll
+   #+end_src
+
+4. Wait for the Deployment
+
+   Once you save the Pages settings, GitHub will trigger a very fast deployment
+   (since it's just copying static files). Within a minute or two, your site
+   will be live at https://your-username.github.io/your-public-repo-B/ (or your
+   custom domain, if you add one in the Pages settings).
+
+*** The Deployment Bridge (GitHub Actions)
+
+When you push your source code to the private Repo A, a GitHub Action spins up,
+builds the site in a clean cloud environment, and pushes the resulting HTML
+directly to Repo B.
+
+To set this up:
+
+1. Generate a Personal Access Token (PAT) in your GitHub Developer Settings with
+   the repo scope checked.
+
+   I highly recommend creating a Fine-grained personal access token.
+
+   While the "Tokens (classic)" will absolutely work, they grant sweeping access
+   to every repository in your account. If a classic token with the repo scope
+   is ever compromised, the attacker has full control over all your code.
+
+   A fine-grained token allows you to restrict the token's access strictly to
+   Repo B (your public HTML repository) and limit it to only the specific
+   permissions needed to push files.
+
+   Here is how to generate the fine-grained token for this exact deployment
+   setup:
+
+   1) Go to your GitHub Settings > Developer settings (at the very bottom) >
+      Personal access tokens > Fine-grained tokens.
+   2) Click the =Generate new token= button.
+   3) Give your token a name (e.g., "Jekyll Deploy to Repo B") and set an
+      expiration date.
+   4) Under Repository access, select =Only select repositories=. In the dropdown
+      that appears, find and select Repo B (your destination repository).
+   5) Scroll down to Permissions and click on =Add permissions= to expand it. Find
+      =Contents= and change the access level to Read and write. (This is all the
+      action needs to push your built =_site= files).
+   6) Click =Generate token= at the bottom of the page.
+   7) Copy the generated token immediately, as GitHub will only show it to you
+      this one time.
+
+2. Go to the Settings of Repo A, navigate to Secrets and variables > Actions,
+   and add a new repository secret. Name it ~DEPLOY_PAT~ and paste your token.
+
+3. In Repo A, update your =.github/workflows/jekyll.yml= file to look like this:
+
+   #+begin_src yaml
+   name: Deploy Jekyll site to Repo B
+
+   on:
+     push:
+       branches:
+         - master  # Or main, depending on your default branch in Repo A
+
+   jobs:
+     build_and_deploy:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Checkout Source Code
+           uses: actions/checkout@v4
+
+         - name: Setup Ruby
+           uses: ruby/setup-ruby@v1
+           with:
+             ruby-version: '3.1'
+             bundler-cache: true
+
+         - name: Build Site
+           run: bundle exec jekyll build
+
+         - name: Deploy to External Repository
+           uses: peaceiris/actions-gh-pages@v3
+           with:
+             personal_token: ${{ secrets.DEPLOY_PAT }}
+             # Replace with actual Repo B name
+             external_repository: your-username/Repo-B
+             # Branch to push to in Repo B
+             publish_branch: master
+             publish_dir: ./_site
+             # Ensures stale files in Repo B are deleted
+             keep_files: false
+   #+end_src
+
+The =peaceiris/actions-gh-pages= action automatically creates the =.nojekyll= file
+in Repo B, preventing GitHub Pages from trying to rebuild your already-built
+files.
+
+Repo B's history will strictly be clean, automated deployment commits, while
+Repo A retains your actual human commit history and draft iterations.
+
+
+** Use a single, secure master password
+
+You will store the password as a GitHub Secret for your automated deployments,
+and pass it inline when testing locally.
+
+1. Update the GitHub Action
+
+   First, go to your private repository settings on GitHub (Settings > Secrets
+   and variables > Actions). Add a new Repository Secret named ~BLOG_PASSWORD~ and
+   enter your master password.
+
+   Then, update your workflow file to pass this secret into the build
+   environment:
+
+   {% raw %}
+   #+begin_src diff
+   --- .github/workflows/jekyll.yml
+   +++ .github/workflows/jekyll.yml
+   @@ -25,2 +25,3 @@
+            env:
+              JEKYLL_ENV: production
+   +          BLOG_PASSWORD: ${{ secrets.BLOG_PASSWORD }}
+   #+end_src
+   {% endraw %}
+
+2. Local Usage
+
+   When you are writing locally and need to test an encrypted post, you simply
+   pass the variable directly into your terminal command before serving:
+
+   #+begin_src sh
+   BLOG_PASSWORD="your_master_password" bundle exec jekyll serve
+   #+end_src
+
+   If you don't want to type it every time, you can add to your =~/.zshrc= or
+   =~/.bashrc= file:
+
+   #+begin_src sh
+   export BLOG_PASSWORD="your_master_password"
+   #+end_src
+
+** Use in Front Matter
+
+Now, you can define your visibility state across your Markdown or Org files
+effortlessly.
+
+#+begin_src text
+---
+title: "My Post"
+published: true
+hidden: false
+search: false
+encrypted: true
+---
+
+Your content.
+#+end_src

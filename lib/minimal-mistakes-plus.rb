@@ -9,6 +9,7 @@ require_relative "minimal_mistakes_plus/style_injector"
 require_relative "minimal_mistakes_plus/link_abbr"
 require_relative "minimal_mistakes_plus/liquify"
 require_relative "minimal_mistakes_plus/symlink_external_assets"
+require_relative "minimal_mistakes_plus/encrypt_post"
 
 module MinimalMistakesPlus
   class Error < StandardError; end

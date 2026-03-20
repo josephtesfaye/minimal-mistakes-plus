@@ -17,6 +17,8 @@ docs:
     children:
       - title: "Org Mode"
         url: /docs/org-mode/
+      - title: "Encryption"
+        url: /docs/encryption/
       - title: "Helpers"
         url: /docs/helpers/
 
@@ -31,5 +33,7 @@ docs-dev:
     children:
       - title: "Org Mode"
         url: /docs/dev/org-mode/
+      - title: "Encryption"
+        url: /docs/dev/encryption/
       - title: "Helpers"
         url: /docs/dev/helpers/

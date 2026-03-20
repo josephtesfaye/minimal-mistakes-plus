@@ -1,0 +1,11 @@
+---
+title: "Content Encryption"
+permalink: /docs/dev/encryption/
+last_modified_at: 2026-03-20
+sidebar:
+  - nav: docs-dev
+---
+
+Related articles:
+
+- [[/blog/web/private-posts/][Enabling Private Posts in Minimal Mistakes]]
