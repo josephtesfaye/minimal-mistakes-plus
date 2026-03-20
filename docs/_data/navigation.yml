@@ -11,9 +11,9 @@ docs:
     children:
       - title: "Dark Mode"
         url: /docs/dark-mode/
+  - title: Content
+    children:
       - title: "Org Mode"
         url: /docs/org-mode/
-      - title: "Link Abbreviations"
-        url: /docs/link-abbr/
-      - title: "Link Abbreviations (Markdown)"
-        url: /docs/link-abbr-md/
+      - title: "Helpers"
+        url: /docs/helpers/

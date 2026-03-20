@@ -178,7 +178,7 @@ An ordered list with multiple levels:
 In addition to standard Org links, =minimal-mistakes-plus= facilitates the
 composing of links in the following ways:
 
-- [Link Abbreviations]({{ site.baseurl }}/docs/link-abbr/)
+- [Link Abbreviations]({{ site.baseurl }}/docs/helpers/#link-abbreviations)
 
 *** Link to a Post
 

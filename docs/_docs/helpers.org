@@ -1,7 +1,7 @@
 ---
-title: "Link Abbreviations"
-permalink: /docs/link-abbr/
-last_modified_at: 2026-03-17
+title: "Helpers"
+permalink: /docs/helpers/
+last_modified_at: 2026-03-20
 toc: true
 toc_sticky: true
 link_abbrs:
@@ -18,6 +18,7 @@ gallery:
   - [[foo:unsplash-gallery-image-1.jpg]]
 ---
 
+** Link Abbreviations
 #+LINK: foo https://i.postimg.cc/Vv8jFw8D/
 
 You can use link abbreviations in a document drafted in Markdown or Org Mode,
@@ -56,7 +57,7 @@ link_abbrs:
 
 Below are the supported use cases of link abbreviations.
 
-** Standard Org Links
+*** Standard Org Links
 
 Here is an image:
 
@@ -66,7 +67,7 @@ Here is an image:
 
 [[foo:unsplash-gallery-image-1.jpg]]
 
-** Figure
+*** Figure
 
 Links written in Liquid syntax are also supported. For example, here is a
 figure:
@@ -81,7 +82,7 @@ alt="" caption="A figure" %}
 {% include figure image_path="foo:unsplash-gallery-image-1.jpg" popup=true
 alt="" caption="A figure" %}
 
-** Gallery
+*** Gallery
 
 You can create a gallery as usual in [[https://mmistakes.github.io/minimal-mistakes/docs/helpers/#gallery][Minimal Mistakes]]. The extra benefit is that
 now you can use link abbreviations in it, like this:
@@ -108,3 +109,8 @@ gallery:
 All the link forms shown above can be expanded correctly to the same image path:
 
 {% include gallery columns=6 caption="A gallery using link abbreviations " %}
+
+*** Markdown
+
+See [Link Abbreviations for Markdown]({{ site.baseurl }}/docs/link-abbr-md/) for
+demos in Markdown.
