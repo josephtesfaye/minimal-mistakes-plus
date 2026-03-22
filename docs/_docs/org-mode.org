@@ -274,28 +274,44 @@ Hello
 {% endraw %}
 
 * Notices
+
 #+begin_src markdown
+{: .notice}
+,*Watch out!* This is a notice inside an Org file.
+
+{: .notice--primary}
+,*Watch out!* This is a primary notice inside an Org file.
+
+{: .notice--info}
+,*Watch out!* This is an info notice inside an Org file.
+
 {: .notice--warning}
 ,*Watch out!* This is a warning notice inside an Org file.
+
+{: .notice--success}
+,*Watch out!* This is a success notice inside an Org file.
+
+{: .notice--danger}
+,*Watch out!* This is a danger notice inside an Org file.
 #+end_src
 
 {: .notice}
-*Watch out!* This is a warning notice inside an Org file.
+*Watch out!* This is a notice inside an Org file.
 
 {: .notice--primary}
-*Watch out!* This is a warning notice inside an Org file.
+*Watch out!* This is a primary notice inside an Org file.
 
 {: .notice--info}
-*Watch out!* This is a warning notice inside an Org file.
+*Watch out!* This is an info notice inside an Org file.
 
 {: .notice--warning}
 *Watch out!* This is a warning notice inside an Org file.
 
 {: .notice--success}
-*Watch out!* This is a warning notice inside an Org file.
+*Watch out!* This is a success notice inside an Org file.
 
 {: .notice--danger}
-*Watch out!* This is a warning notice inside an Org file.
+*Watch out!* This is a danger notice inside an Org file.
 
 TODO: How to use notice on multiple paragraphs:
 
