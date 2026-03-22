@@ -13,10 +13,10 @@ Jekyll::Hooks.register [:pages, :documents], :post_render, priority: :low do |do
       doc.data['read_time'] = false
     end
 
-    password = ENV['BLOG_PASSWORD']
+    password = ENV['MMP_PASSWORD']
 
     if password.nil? || password.empty?
-      doc.output.gsub!(/<body>.*<\/body>/m, "<body><p style='color:red;'>Configuration error: Environment variable BLOG_PASSWORD is missing.</p></body>")
+      doc.output.gsub!(/<body>.*<\/body>/m, "<body><p style='color:red;'>Configuration error: Environment variable MMP_PASSWORD is missing.</p></body>")
       next
     end
 

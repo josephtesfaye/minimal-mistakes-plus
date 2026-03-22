@@ -227,7 +227,7 @@ and pass it inline when testing locally.
 1. Update the GitHub Action
 
    First, go to your private repository settings on GitHub (Settings > Secrets
-   and variables > Actions). Add a new Repository Secret named ~BLOG_PASSWORD~ and
+   and variables > Actions). Add a new Repository Secret named ~MMP_PASSWORD~ and
    enter your master password.
 
    Then, update your workflow file to pass this secret into the build
@@ -240,7 +240,7 @@ and pass it inline when testing locally.
    @@ -25,2 +25,3 @@
             env:
               JEKYLL_ENV: production
-   +          BLOG_PASSWORD: ${{ secrets.BLOG_PASSWORD }}
+   +          MMP_PASSWORD: ${{ secrets.MMP_PASSWORD }}
    #+end_src
    {% endraw %}
 
@@ -250,14 +250,14 @@ and pass it inline when testing locally.
    pass the variable directly into your terminal command before serving:
 
    #+begin_src sh
-   BLOG_PASSWORD="your_master_password" bundle exec jekyll serve
+   MMP_PASSWORD="your_master_password" bundle exec jekyll serve
    #+end_src
 
    If you don't want to type it every time, you can add to your =~/.zshrc= or
    =~/.bashrc= file:
 
    #+begin_src sh
-   export BLOG_PASSWORD="your_master_password"
+   export MMP_PASSWORD="your_master_password"
    #+end_src
 
 * Use in Front Matter
