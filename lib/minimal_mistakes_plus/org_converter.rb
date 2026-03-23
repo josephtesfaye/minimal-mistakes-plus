@@ -1,6 +1,21 @@
 require 'nokogiri'
 require 'rouge'
 
+module Jekyll
+  # register a custom Liquid filter called orgify. This mirrors Jekyll's
+  # built-in markdownify, but dynamically routes the captured string through the
+  # org-ruby parser.
+  module OrgifyFilter
+    def orgify(input)
+      return "" if input.nil? || input.empty?
+      site = @context.registers[:site]
+      converter = site.find_converter_instance(Jekyll::OrgConverter)
+      converter.convert(input)
+    end
+  end
+end
+Liquid::Template.register_filter(Jekyll::OrgifyFilter)
+
 Jekyll::Hooks.register [:pages, :documents], :pre_render do |doc|
   # Enable Liquid syntax
   if doc.extname.downcase == '.org'
@@ -8,21 +23,40 @@ Jekyll::Hooks.register [:pages, :documents], :pre_render do |doc|
       doc.content = "%%HEADING_IDS:topdown%%\n" + doc.content
     end
 
-    # Enable {% raw %}...{% endraw %}
-    doc.content = doc.content.gsub(/^[ \t]*(\{%[ \t]*raw[ \t]*%\})[ \t]*\n?/, '\1')
-    doc.content = doc.content.gsub(/^[ \t]*(\{%[ \t]*endraw[ \t]*%\})[ \t]*\n?/, '\1')
-
+    # Safely encode {% raw %} blocks to bypass Jekyll's buggy excerpt generator
+    doc.content = doc.content.gsub(/\{%[ \t]*raw[ \t]*%\}(.*?)\{%[ \t]*endraw[ \t]*%\}/m) do
+      ::Regexp.last_match(1).gsub('{%', '@@L_OPEN@@').gsub('%}', '@@L_CLOSE@@')
+        .gsub('{{', '@@L_OUT_OPEN@@').gsub('}}', '@@L_OUT_CLOSE@@')
+    end
     block_regex = /(?mi:^[ \t]*#\+(?:begin_src|BEGIN_HTML).*?^[ \t]*#\+(?:end_src|END_HTML))/
-    raw_regex = /(?mi:\{%[ \t]*raw[ \t]*%\}.*?\{%[ \t]*endraw[ \t]*%\})/
     include_regex = /^[ \t]*(\{%[ \t]*include[ \t]+(?:figure|gallery)(?:(?!%\}).|\{%.*?%\})*%\})[ \t]*$/m
 
+    # Notices for block contents
+    div_open_regex = /(?i:^[ \t]*<div[^>]+(?:markdown|org)="1"[^>]*>[ \t]*$)/
+    div_close_regex = /(?i:^[ \t]*<\/div>[ \t]*$)/
+    orgify_block_regex = /(?mi:^[ \t]*<div[^>]*>(?:(?!<\/div>).)*?\{\{[^}]*\|[ \t]*orgify[ \t]*\}\}(?:(?!<\/div>).)*?<\/div>[ \t]*$)/
+
     # Enable figures, galleries, and links to posts (skip inside code or raw blocks)
-    doc.content = doc.content.gsub(/#{block_regex}|#{raw_regex}|#{include_regex}/) do |match|
-      $1 ? "\n#+BEGIN_HTML\n#{$1}\n#+END_HTML\n" : match
+    depth = 0
+    doc.content = doc.content.gsub(/#{block_regex}|#{include_regex}|#{orgify_block_regex}|#{div_open_regex}|#{div_close_regex}/) do |match|
+      if match.match?(/\A[ \t]*#\+(?:begin_src|BEGIN_HTML)/i)
+        match
+      elsif match.match?(include_regex) || match.match?(orgify_block_regex)
+        "\n#+BEGIN_HTML\n#{match.strip}\n#+END_HTML\n"
+      elsif match.match?(div_open_regex)
+        depth += 1
+        tag = match.strip.gsub(/[ \t]*(?:markdown|org)="1"/i, '')
+        "\n#+BEGIN_HTML\n#{tag}\n#+END_HTML\n"
+      elsif match.match?(div_close_regex) && depth > 0
+        depth -= 1
+        "\n#+BEGIN_HTML\n</div>\n#+END_HTML\n"
+      else
+        match
+      end
     end
 
     # Pre-process furigana to strip newlines and prevent org-ruby table corruption
-    doc.content = doc.content.gsub(/#{block_regex}|#{raw_regex}|#{MinimalMistakesPlus::FURIGANA_REGEX}/) do |match|
+    doc.content = doc.content.gsub(/#{block_regex}|#{MinimalMistakesPlus::FURIGANA_REGEX}/) do |match|
       if match.match?(/\A[ \t]*(?:#\+|\{%)/)
         match
       else
@@ -290,4 +324,11 @@ Jekyll::Hooks.register [:pages, :documents], :post_render, priority: :high do |d
   end
 
   doc.output = fragment.to_html if modified
+end
+
+Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
+  # Decode Liquid tags preserved from {% raw %} blocks
+  if doc.output.include?('@@L_OPEN@@') || doc.output.include?('@@L_OUT_OPEN@@')
+    doc.output = doc.output.gsub('@@L_OPEN@@', '{%').gsub('@@L_CLOSE@@', '%}').gsub('@@L_OUT_OPEN@@', '{{').gsub('@@L_OUT_CLOSE@@', '}}')
+  end
 end

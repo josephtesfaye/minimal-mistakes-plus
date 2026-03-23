@@ -275,7 +275,11 @@ Hello
 
 * Notices
 
-#+begin_src markdown
+You can write notices similarly to [[https://mmistakes.github.io/minimal-mistakes/docs/utility-classes/#notices][Markdown]].
+
+** For One Line or Paragraph
+
+#+begin_src org
 {: .notice}
 ,*Watch out!* This is a notice inside an Org file.
 
@@ -313,28 +317,136 @@ Hello
 {: .notice--danger}
 *Watch out!* This is a danger notice inside an Org file.
 
-TODO: How to use notice on multiple paragraphs:
+** For Block Contents
+
+You can put a block of contents in a notice in the following styles:
+
+*** Style 1
+
+Using ~<div class="notice--type" org="1">~:
+
+#+begin_src org
+<div class="notice" org="1">
+,*Bold Text:* Plain text. A [[#images][link]].
+
+A list:
+
+- Item 1
+- Item 2
+
+A code block:
+
+,#+begin_src html
+<html>
+  <body>Hello World!<body>
+</html>
+,#+end_src
+</div>
+#+end_src
+
+<div class="notice" org="1">
+*Bold Text:* Plain text. A [[#images][link]].
+
+A list:
+
+- Item 1
+- Item 2
+
+A code block:
+
+#+begin_src html
+<html>
+  <body>Hello World!<body>
+</html>
+#+end_src
+</div>
+
+*** Style 2
+
+Using ~{% raw %}{% capture <id> %}{% endraw %}~:
+
+{% raw %}
+#+begin_src org
+{% capture notice-1 %}
+,*Bold Text:* Plain text. A [[#images][link]].
+
+A list:
+
+- Item 1
+- Item 2
+
+A code block:
+
+,#+begin_src html
+<html>
+  <body>Hello World!<body>
+</html>
+,#+end_src
+{% endcapture %}
+
+<div class="notice">{{ notice-1 | orgify }}</div>
+#+end_src
+{% endraw %}
+
+{% capture notice-1 %}
+*Bold Text:* Plain text. A [[#images][link]].
+
+A list:
+
+- Item 1
+- Item 2
+
+A code block:
+
+#+begin_src html
+<html>
+  <body>Hello World!<body>
+</html>
+#+end_src
+{% endcapture %}
+
+<div class="notice">{{ notice-1 | orgify }}</div>
+
+*** Style 3
+
+Using straight HTML:
 
 #+begin_src org
 ,#+begin_html
-<div class="notice--warning" markdown="1">
-It seems ~bundle install~ in GitHub Actions' =build_and_deploy= workflow of
-~josephs-blog~ doesn’t pull the latest code from =minimal-mistakes-plus=
-automatically with the setup:
-
-,#+begin_src ruby
-gem "minimal-mistakes-plus", github: "josephtesfaye/minimal-mistakes-plus", branch: "main"
-,#+end_src
-
-It still uses the old commit as indicated by the line:
-
-,#+begin_src text
-Using minimal-mistakes-plus 0.1.0 from https://github.com/josephtesfaye/minimal-mistakes-plus.git (at main@70a94f2)
-,#+end_src
-
-which is the same as shown in =Gemfile.lock= of =josephs-blog=. Does this mean I
-have to run ~bundle install~ and commit the updated ~Gemfile.lock~ in order to use
-the latest code? Can you make it pull in the latest code automatically?
+<div class="notice">
+  <p><b>Bold Text:</b> Plain text. A <a href="#images">link</a>.</p>
+  <p>A list:</p>
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+  </ul>
+  <p>A code block:</p>
+  <div class="language-html highlighter-rouge">
+    <div class="highlight">
+      <pre class="highlight"><code><span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;body&gt;</span>Hello World!<span class="nt">&lt;body&gt;</span>
+<span class="nt">&lt;/html&gt;</span></code></pre>
+    </div>
+  </div>
 </div>
 ,#+end_html
 #+end_src
+
+#+begin_html
+<div class="notice">
+  <p><b>Bold Text:</b> Plain text. A <a href="#images">link</a>.</p>
+  <p>A list:</p>
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+  </ul>
+  <p>A code block:</p>
+  <div class="language-html highlighter-rouge">
+    <div class="highlight">
+      <pre class="highlight"><code><span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;body&gt;</span>Hello World!<span class="nt">&lt;body&gt;</span>
+<span class="nt">&lt;/html&gt;</span></code></pre>
+    </div>
+  </div>
+</div>
+#+end_html
