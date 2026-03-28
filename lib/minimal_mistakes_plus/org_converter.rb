@@ -13,7 +13,155 @@ module Jekyll
       converter.convert(input)
     end
   end
+
+  # Process complex tables
+  module OrgAdvancedTables
+    def self.generate_html_table(table_text, type)
+      lines = table_text.lines.map { |l| l.chomp.sub(/^[ \t]+/, '') }
+
+      preserve_newlines = false
+      if lines.first.match?(/#\+ATTR_ARGS:/i)
+        preserve_newlines = !!lines.first.match?(/(?:^|\s):newlines[ \t]+t\b/i)
+        lines.shift
+      end
+
+      lines.reject! { |l| l.strip.empty? }
+
+      max_len = lines.map(&:length).max
+      lines.map! { |l| l.ljust(max_len, ' ') }
+
+      if type == :org_complex
+        grid_x_tmp = lines.first.enum_for(:scan, /[|+]/).map { Regexp.last_match.begin(0) }
+        border_line = " " * max_len
+        grid_x_tmp.each { |x| border_line[x] = '|' }
+        (0...grid_x_tmp.size - 1).each do |c|
+          ((grid_x_tmp[c] + 1)...grid_x_tmp[c + 1]).each { |i| border_line[i] = '-' }
+        end
+        lines.unshift(border_line) unless lines.first.strip.match?(/^[|+-=]+$/)
+        lines.push(border_line) unless lines.last.strip.match?(/^[|+-=]+$/)
+      end
+
+      if type == :emacs
+        grid_x = lines.first.enum_for(:scan, /\+/).map { Regexp.last_match.begin(0) }
+      else
+        grid_x = lines.first.enum_for(:scan, /[|+]/).map { Regexp.last_match.begin(0) }
+      end
+
+      grid_y = lines.each_index.select do |i|
+        (0...grid_x.size - 1).any? do |c|
+          lb, rb = lines[i][grid_x[c]], lines[i][grid_x[c + 1]]
+          if ['+', '|'].include?(lb) && ['+', '|'].include?(rb)
+            seg = lines[i][(grid_x[c] + 1)...grid_x[c + 1]]
+            seg && !seg.strip.empty? && seg.strip.match?(/^[-=+]+$/)
+          else
+            false
+          end
+        end
+      end
+
+      cells = []
+      visited = Array.new(grid_y.size - 1) { Array.new(grid_x.size - 1, false) }
+
+      (0...grid_y.size - 1).each do |r|
+        (0...grid_x.size - 1).each do |c|
+          next if visited[r][c]
+
+          cs = 1
+          while c + cs < grid_x.size - 1
+            y_check = grid_y[r] + 1
+            y_check = grid_y[r] if y_check == grid_y[r + 1]
+            char = lines[y_check][grid_x[c + cs]]
+            break if char == '|' || char == '+'
+            cs += 1
+          end
+
+          rs = 1
+          while r + rs < grid_y.size - 1
+            seg = lines[grid_y[r + rs]][(grid_x[c] + 1)...(grid_x[c + cs])]
+            break if seg && !seg.strip.empty? && seg.strip.match?(/^[-=+]+$/)
+            rs += 1
+          end
+
+          (r...r + rs).each { |vr| (c...c + cs).each { |vc| visited[vr][vc] = true } }
+
+          text_lines = ((grid_y[r] + 1)...grid_y[r + rs]).map { |yy| lines[yy][(grid_x[c] + 1)...grid_x[c + cs]] }
+
+          is_header = type == :org_complex ? (r == 0) : (r == 0 && lines[grid_y[1]].include?('='))
+
+          align = "left"
+          if (first_text = text_lines.find { |l| !l.strip.empty? })
+            l_space, r_space = first_text[/\A\s*/].length, first_text[/\s*\z/].length
+            align = "center" if l_space > 1 && r_space > 1
+            align = "right" if l_space > 1 && r_space <= 1
+          end
+
+          cells << { r: r, c: c, rs: rs, cs: cs, text_lines: text_lines, align: align, is_header: is_header }
+        end
+      end
+
+      if type == :org_complex
+        new_cells = []
+        cells.group_by { |cell| cell[:r] }.each do |r, row_cells|
+          i = 0
+          while i < row_cells.size
+            cell = row_cells[i]
+            if cell[:text_lines].map(&:strip).join("").start_with?("<span")
+              merged_cs = cell[:cs]
+              i += 1
+              while i < row_cells.size
+                next_cell = row_cells[i]
+                merged_cs += next_cell[:cs]
+                break if next_cell[:text_lines].map(&:strip).join("") == ">"
+                i += 1
+              end
+              cell[:cs], cell[:text_lines] = merged_cs, []
+            end
+            new_cells << cell; i += 1
+          end
+        end
+        cells = new_cells
+      end
+
+      html = "<table>\n"
+      build_tbody = ->(cell_group) {
+        return "" if cell_group.empty?
+        res = ""
+        cell_group.group_by { |c| c[:r] }.each do |r, row_cells|
+          res << "    <tr>\n"
+          row_cells.sort_by { |c| c[:c] }.each do |cell|
+            tag = cell[:is_header] ? "th" : "td"
+            attrs = []
+            attrs << "colspan=\"#{cell[:cs]}\"" if cell[:cs] > 1
+            attrs << "rowspan=\"#{cell[:rs]}\"" if cell[:rs] > 1
+            attrs << "align=\"#{cell[:align]}\" valign=\"top\""
+
+            if preserve_newlines
+              content = cell[:text_lines].map(&:strip).drop_while(&:empty?)
+                          .reverse.drop_while(&:empty?).reverse.join("<br>\n")
+            else
+              content = cell[:text_lines].map(&:strip).reject(&:empty?).join(" ")
+            end
+
+            if content.empty?
+              res << "      <#{tag} #{attrs.join(' ')}></#{tag}>\n"
+            elsif content.include?("<br>")
+              res << "      <#{tag} #{attrs.join(' ')}>\n        #{content.gsub("\n", "\n        ")}</#{tag}>\n"
+            else
+              res << "      <#{tag} #{attrs.join(' ')}>#{content}</#{tag}>\n"
+            end
+          end
+          res << "    </tr>\n"
+        end
+        res
+      }
+
+      html << "  <thead>\n#{build_tbody.call(cells.select { |c| c[:is_header] })}  </thead>\n" if cells.any? { |c| c[:is_header] }
+      html << "  <tbody>\n#{build_tbody.call(cells.reject { |c| c[:is_header] })}  </tbody>\n</table>"
+      "\n#+BEGIN_HTML\n#{html}\n#+END_HTML\n"
+    end
+  end
 end
+
 Liquid::Template.register_filter(Jekyll::OrgifyFilter)
 
 Jekyll::Hooks.register [:pages, :documents], :pre_render do |doc|
@@ -36,11 +184,19 @@ Jekyll::Hooks.register [:pages, :documents], :pre_render do |doc|
     div_close_regex = /(?i:^[ \t]*<\/div>[ \t]*$)/
     orgify_block_regex = /(?mi:^[ \t]*<div[^>]*>(?:(?!<\/div>).)*?\{\{[^}]*\|[ \t]*orgify[ \t]*\}\}(?:(?!<\/div>).)*?<\/div>[ \t]*$)/
 
+    # Advanced Tables
+    emacs_table_regex = /^(?:[ \t]*#\+ATTR_ARGS:.*?\r?\n)?[ \t]*\+[-=+]+\+[ \t]*\r?\n(?:^[ \t]*[+|].*?\r?\n)*^[ \t]*\+[-=+]+\+[ \t]*(?=\r?\n|\z)/i
+    org_complex_regex = /^[ \t]*#\+ATTR_ARGS:.*?:complex[ \t]+t\b.*?\r?\n(?:^[ \t]*\|.*?\r?\n)*^[ \t]*\|.*?(?=\r?\n|\z)/i
+
     # Enable figures, galleries, and links to posts (skip inside code or raw blocks)
     depth = 0
-    doc.content = doc.content.gsub(/#{block_regex}|#{include_regex}|#{orgify_block_regex}|#{div_open_regex}|#{div_close_regex}/) do |match|
+    doc.content = doc.content.gsub(/#{block_regex}|#{include_regex}|#{orgify_block_regex}|#{div_open_regex}|#{div_close_regex}|#{emacs_table_regex}|#{org_complex_regex}/) do |match|
       if match.match?(/\A[ \t]*#\+(?:begin_src|BEGIN_HTML)/i)
         match
+      elsif match.match?(/\A(?:[ \t]*#\+ATTR_ARGS:.*?\r?\n)?[ \t]*\+[-=+]+\+/i)
+        Jekyll::OrgAdvancedTables.generate_html_table(match, :emacs)
+      elsif match.match?(/\A[ \t]*#\+ATTR_ARGS:.*?:complex[ \t]+t\b/i)
+        Jekyll::OrgAdvancedTables.generate_html_table(match, :org_complex)
       elsif match.match?(include_regex) || match.match?(orgify_block_regex)
         "\n#+BEGIN_HTML\n#{match.strip}\n#+END_HTML\n"
       elsif match.match?(div_open_regex)

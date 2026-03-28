@@ -124,6 +124,9 @@ collections:
   docs:
     output: true
     permalink: /:collection/:path/
+  test:
+    output: true
+    permalink: /:collection/:path/
 
 defaults:
   # _docs
@@ -139,3 +142,13 @@ defaults:
       toc_sticky: true
       sidebar:
         nav: "docs"
+  - scope:
+      path: ""
+      type: test
+    values:
+      layout: single
+      read_time: false
+      author_profile: false
+      share: false
+      comments: false
+      toc_sticky: true

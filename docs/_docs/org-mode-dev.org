@@ -11,3 +11,208 @@ sidebar:
 Related articles:
 
 - [[/blog/web/enable-org-mode/][Enabling Drafting in Org Mode in Minimal Mistakes]]
+
+* Tables
+** Complex Tables
+
+I want to enable line-wrapping in cells of Org tables (or multi-line cells) for
+=org_converter.rb= in minimal-mistakes-plus. Currently Org Mode doesn't natively
+support automatic line wrapping or multi-line cells in tables (or does it as of
+2026?)
+
+I understand that Emacs has the built-in =table.el= library that supports
+complex tables with multi-line cells, column- and row-spanning, and cell content
+justification. Org mode recognizes such tables and exports them properly.
+
+For example, when running the command ~table-generate-source~ or
+~org-export-dispatch~ to generate an HTML table from this text-based table:
+
+#+NAME: table-1-emacs-table
++------+------+-------+
+| Col1 | Col2 | Col3  |
++------+------+-------+
+| foo  | foo1 | Hello |
+|      |      | World |
++------+------+-------+
+| bar  |              |
++------+------+-------+
+|      |      |       |
+| zoo  +------+-------+
+|      |      |       |
++------+------+-------+
+
+The line wrapping, column- and row-spanning, and cell content justification are
+preserved:
+
+#+NAME: table-1-emacs-table-output
+#+begin_src html
+<table>
+  <tbody>
+    <tr>
+      <td align="left" valign="top">Col1</td>
+      <td align="left" valign="top">Col2</td>
+      <td align="left" valign="top">Col3</td>
+    </tr>
+    <tr>
+      <td align="left" valign="top">
+        foo<br>
+      </td>
+      <td align="left" valign="top">
+        foo1<br>
+      </td>
+      <td align="left" valign="top">
+        Hello<br>
+        World</td>
+    </tr>
+    <tr>
+      <td align="left" valign="top">bar</td>
+      <td colspan="2" align="left" valign="top"></td>
+    </tr>
+    <tr>
+      <td rowspan="2" align="left" valign="top">zoo</td>
+      <td align="left" valign="top"></td>
+      <td align="left" valign="top"></td>
+    </tr>
+    <tr>
+      <td align="left" valign="top"></td>
+      <td align="left" valign="top"></td>
+    </tr>
+  </tbody>
+</table>
+#+end_src
+
+As I have tested the same table in minimal-mistakes-plus, =org-ruby= or
+=org_converter.rb= can't produce the same table structure and preserve the said
+features. So I want to implement it on our own (or is there already a lib or
+plugin supporting this? Please check).
+
+Then for alignment I want it to mimic what the variable
+~table-detect-cell-alignment~ does as described below:
+
+#+begin_src text
+Detect cell contents alignment automatically.
+When non-nil cell alignment is automatically determined by the
+appearance of the current cell contents when recognizing tables as a
+whole.  This applies to `table-recognize', `table-recognize-region'
+and `table-recognize-table' but not to `table-recognize-cell'.
+#+end_src
+
+But there are problems I don't like about the =table.el= tables:
+
+1. They don't support headers natively, that is, there's no way to generate
+   ~<thead>~
+2. They are less convenient to edit than Org tables.
+
+So for the purpose of our implementation I want it to support headers by this
+rule: If the first row uses = (equal sign) for the horizontal ruler then it's
+parsed as a header. For example:
+
+#+NAME: table-2-emacs-table
++------+------+-------+
+| Col1 | Col2 | Col3  |
++======+======+=======+
+| foo  | foo1 | Hello |
+|      |      | World |
++------+------+-------+
+| bar  |              |
++------+------+-------+
+|      |      |       |
+| zoo  +------+-------+
+|      |      |       |
++------+------+-------+
+
+Besides, I want to enable the same features when generating HTML from Org tables
+in the format:
+
+#+NAME: table-3-org-table
+#+ATTR_ARGS: :complex t
+|------+--------+---------|
+| Col1 | Col2   | Col3    |
+|------+--------+---------|
+| foo  | foo1   | Hello   |
+|      |        | World   |
+|------+--------+---------|
+| bar  | <span  | >       |
+|------+--------+---------|
+|      |        |         |
+| zoo  | ------ | ------- |
+|      |        |         |
+|------+--------+---------|
+
+which is an Org table with the following specifications:
+
+1. It's processed specially as a complex table only when it's marked by
+   ~#+ATTR_ARGS: :complex t~.
+2. When it's a complex table rows (~<tr>~) are delimited by horizontal rulers,
+   not lines.
+3. The first row is always interpreted as the header row.
+4. Column-spanning is indicated by the notation ~<span ... >~. To merge several
+   columns of the same row you put ~<span~ in the first cell and ~>~ in the
+   last.
+5. Row-spanning is recognized automatically when there isn't a horizontal ruler
+   across several cells in a column but there are rulers across the cells of the
+   same rows in other columns.
+6. ~#+ATTR_ARGS:~ can take other arguments:
+
+   - ~:newlines~: Whether to preserve newlines in the output HTML, either as
+     ~<br>~ or linefeeds. If ~nil~ or unset, don't preserve newlines, i.e.,
+     strip off all ~<br>~ and linefeeds in the cell. If ~t~ preserve newlines as
+     ~<br>~.
+
+In this way, both =table-2-emacs-table= and =table-2-org-table= produce the same
+output:
+
+#+NAME: expected-output
+#+begin_src html
+<table>
+  <thead>
+    <tr>
+      <th align="left" valign="top">Col1</th>
+      <th align="left" valign="top">Col2</th>
+      <th align="left" valign="top">Col3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="left" valign="top">
+        foo<br>
+      </td>
+      <td align="left" valign="top">
+        foo1<br>
+      </td>
+      <td align="left" valign="top">
+        Hello<br>
+        World</td>
+    </tr>
+    <tr>
+      <td align="left" valign="top">bar</td>
+      <td colspan="2" align="left" valign="top"></td>
+    </tr>
+    <tr>
+      <td rowspan="2" align="left" valign="top">zoo</td>
+      <td align="left" valign="top"></td>
+      <td align="left" valign="top"></td>
+    </tr>
+    <tr>
+      <td align="left" valign="top"></td>
+      <td align="left" valign="top"></td>
+    </tr>
+  </tbody>
+</table>
+#+end_src
+
+The implementation should be very fast and performant.
+
+-----
+
+To natively parse =table.el= tables and complex Org tables into perfectly
+aligned, spanning HTML structures without relying on =org-ruby='s limited
+row-by-row parser, we can implement a highly optimized grid-extraction pipeline.
+
+By running this parser within the ~:pre_render~ hook, we intercept the raw ASCII
+tables, calculate the true (x, y) coordinate boundaries of every cell using
+their border intersections, and compile them into direct HTML wrapped
+in ~#+BEGIN_HTML~.
+
+Check the commit of these lines here to see the exact lines to change in
+=org_converter.rb= file.

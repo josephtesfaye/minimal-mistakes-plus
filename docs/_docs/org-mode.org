@@ -165,14 +165,124 @@ becomes:
 #+end_src
 
 * Tables
+A simple Org table:
 
-Here is the morphological breakdown:
+| Col1 | Col2 | Col3        |
+|------+------+-------------|
+| foo  | foo1 | Hello World |
+|------+------+-------------|
+| bar  | bar1 | Hello World |
 
-| Component | Origin           | Meaning                    |
-|-----------+------------------+----------------------------|
-| Erythro-  | Greek (erythros) | Red                        |
-| -xyl-     | Greek (xylon)    | Wood                       |
-| -aceae    | Latin (Suffix)   | Belonging to the family of |
+** Complex Tables
+
+A complex Org table which contains line-wrapping cells, column- and row-spanning
+cells:
+
+#+begin_src text
+,#+ATTR_ARGS: :complex t :newlines t
+| Col1 | Col2   | Col3    |
+|------+--------+---------|
+| foo  | foo1   | Hello   |
+|      |        | World   |
+|------+--------+---------|
+| bar  | <span  | >       |
+|------+--------+---------|
+|      |        |         |
+| zoo  | ------ | ------- |
+|      |        |         |
+|------+--------+---------|
+| zoo  |        | Hello   |
+| zoo  | ------ | World   |
+|      |        |         |
+#+end_src
+
+#+ATTR_ARGS: :complex t :newlines t
+| Col1 | Col2   | Col3    |
+|------+--------+---------|
+| foo  | foo1   | Hello   |
+|      |        | World   |
+|------+--------+---------|
+| bar  | <span  | >       |
+|------+--------+---------|
+|      |        |         |
+| zoo  | ------ | ------- |
+|      |        |         |
+|------+--------+---------|
+| zoo  |        | Hello   |
+| zoo  | ------ | World   |
+|      |        |         |
+
+A complex Org table like this isn't natively supported by either Org Mode or
+=org-ruby=, and is solely supported by Minimal Mistakes Plus!
+
+1. A table is processed specially as a complex table only when it's marked by
+   ~#+ATTR_ARGS: :complex t~.
+2. When it's a complex table rows are delimited by horizontal rulers, not lines.
+3. The first row is always interpreted as the header row.
+4. Column-spanning is indicated by the notation ~<span ... >~. To merge several
+   columns of the same row you put ~<span~ in the first cell and ~>~ in the
+   last.
+5. Row-spanning is recognized automatically when there isn't a horizontal ruler
+   across several cells in a column but there are rulers across the cells of the
+   same rows in other columns.
+6. ~#+ATTR_ARGS:~ can take other arguments:
+
+   - ~:newlines~: Whether to preserve newlines in the output HTML, either as
+     ~<br>~ or linefeeds. If ~nil~ or unset, don't preserve newlines, i.e.,
+     strip off all ~<br>~ and linefeeds in the cell. If ~t~ preserve newlines as
+     ~<br>~.
+
+Another example:
+
+#+ATTR_ARGS: :complex t
+| Word      | Sensory Anchor | Mental Image                                     |
+|-----------+----------------+--------------------------------------------------|
+| kasukani  | The Radio      | A radio signal fading out. You have to strain    |
+|           |                | your ears to hear if the music is even still     |
+|           |                | playing.                                         |
+|-----------+----------------+--------------------------------------------------|
+| honokani  | The Candle     | A candle in a dark room. The light is soft,      |
+|           |                | flickering, and has a warm, "emotional"          |
+|           |                | quality.                                         |
+|-----------+----------------+--------------------------------------------------|
+| honnonito | The Peach      | The skin of a peach or a baby's cheek. A soft,   |
+|           |                | warm pinkish glow that bleeds into the surface.  |
+|-----------+----------------+--------------------------------------------------|
+| ussurato  | The Veil       | A thin layer of mist over a lake or a dusting of |
+|           |                | powdered sugar on a cake.                        |
+
+
+An Emacs built-in table (provided by =table.el=):
+
+#+begin_src text
++------+------+-------+
+| Col1 | Col2 | Col3  |
++======+======+=======+
+| foo  | foo1 | Hello |
+|      |      | World |
++------+------+-------+
+| bar  |              |
++------+------+-------+
+|      |      |       |
+| zoo  +------+-------+
+|      |      |       |
++------+------+-------+
+#+end_src
+
++------+------+-------+
+| Col1 | Col2 | Col3  |
++======+======+=======+
+| foo  | foo1 | Hello |
+|      |      | World |
++------+------+-------+
+| bar  |              |
++------+------+-------+
+|      |      |       |
+| zoo  +------+-------+
+|      |      |       |
++------+------+-------+
+
+- No need for ~#+ATTR_ARGS: :complex t~.
 
 * Lists
 
