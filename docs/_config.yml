@@ -152,3 +152,4 @@ defaults:
       share: false
       comments: false
       toc_sticky: true
+      classes: wide

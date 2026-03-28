@@ -16,148 +16,278 @@ module Jekyll
 
   # Process complex tables
   module OrgAdvancedTables
+    # Pre-compiled Regex constants for ultra-fast matching in tight loops
+    CJK_CHARS = "\\p{Han}\\p{Hiragana}\\p{Katakana}\\p{Hangul}，。、！？；：”’（）《》〈〉【】『』「」".freeze
+    CJK_SPACE_REGEX = /([#{CJK_CHARS}])\s+(?=[#{CJK_CHARS}])/u.freeze
+    BORDER_ONLY_REGEX = /^[|+=\-\s]+$/.freeze
+    HORIZONTAL_RULE_REGEX = /^[-=+]+$/.freeze
+
     def self.generate_html_table(table_text, type)
-      lines = table_text.lines.map { |l| l.chomp.sub(/^[ \t]+/, '') }
+      lines = table_text.lines.map { |line| line.chomp.sub(/^[ \t]+/, '') }
 
       preserve_newlines = false
-      if lines.first.match?(/#\+ATTR_ARGS:/i)
+      if lines.first&.match?(/#\+ATTR_ARGS:/i)
         preserve_newlines = !!lines.first.match?(/(?:^|\s):newlines[ \t]+t\b/i)
         lines.shift
       end
 
-      lines.reject! { |l| l.strip.empty? }
+      lines.reject! { |line| line.strip.empty? }
+      return "" if lines.empty?
 
-      max_len = lines.map(&:length).max
-      lines.map! { |l| l.ljust(max_len, ' ') }
+      max_length = lines.map(&:length).max
+      lines.map! { |line| line.ljust(max_length, ' ') }
 
-      if type == :org_complex
-        grid_x_tmp = lines.first.enum_for(:scan, /[|+]/).map { Regexp.last_match.begin(0) }
-        border_line = " " * max_len
-        grid_x_tmp.each { |x| border_line[x] = '|' }
-        (0...grid_x_tmp.size - 1).each do |c|
-          ((grid_x_tmp[c] + 1)...grid_x_tmp[c + 1]).each { |i| border_line[i] = '-' }
+      cells = if type == :org_complex
+                parse_org_complex(lines, max_length)
+              else
+                parse_emacs(lines)
+              end
+
+      render_html(cells, preserve_newlines)
+    end
+
+    private
+
+    # --- Parsers ---
+
+    def self.parse_org_complex(lines, max_length)
+      cells = []
+
+      # 1. Convert text lines into a 2D logical grid of cell segments
+      raw_grid = lines.map do |line|
+        if line.include?('|')
+          is_separator = line.strip.match?(BORDER_ONLY_REGEX) && line.match?(/[-=]/)
+          line = line.tr('+', '|') if is_separator
+
+          segments = line.split('|', -1)
+          segments.shift if segments.first && segments.first.strip.empty?
+          segments.pop if segments.last && segments.last.strip.empty?
+          segments
+        else
+          []
         end
-        lines.unshift(border_line) unless lines.first.strip.match?(/^[|+-=]+$/)
-        lines.push(border_line) unless lines.last.strip.match?(/^[|+-=]+$/)
       end
 
-      if type == :emacs
-        grid_x = lines.first.enum_for(:scan, /\+/).map { Regexp.last_match.begin(0) }
-      else
-        grid_x = lines.first.enum_for(:scan, /[|+]/).map { Regexp.last_match.begin(0) }
+      raw_grid.reject!(&:empty?)
+      return cells if raw_grid.empty?
+
+      # 2. Equalize columns to form a perfect box
+      columns_count = raw_grid.map(&:size).max
+      raw_grid.each { |row| row << " " while row.size < columns_count }
+
+      # 3. Ensure top and bottom borders exist for logical boundary calculation
+      separator_row = Array.new(columns_count, "---")
+      raw_grid.unshift(separator_row.dup) unless raw_grid.first.all? { |col| col.strip.match?(HORIZONTAL_RULE_REGEX) }
+      raw_grid.push(separator_row.dup) unless raw_grid.last.all? { |col| col.strip.match?(HORIZONTAL_RULE_REGEX) }
+
+      # 4. Identify rows that serve as horizontal borders
+      logical_boundaries = []
+      raw_grid.each_with_index do |row, y_index|
+        logical_boundaries << y_index if row.any? { |col| col.strip.match?(HORIZONTAL_RULE_REGEX) }
       end
 
-      grid_y = lines.each_index.select do |i|
-        (0...grid_x.size - 1).any? do |c|
-          lb, rb = lines[i][grid_x[c]], lines[i][grid_x[c + 1]]
-          if ['+', '|'].include?(lb) && ['+', '|'].include?(rb)
-            seg = lines[i][(grid_x[c] + 1)...grid_x[c + 1]]
-            seg && !seg.strip.empty? && seg.strip.match?(/^[-=+]+$/)
+      visited_cells = Array.new(logical_boundaries.size - 1) { Array.new(columns_count, false) }
+
+      # 5. Traverse the logical boundaries to construct cells and calculate row spans
+      (0...logical_boundaries.size - 1).each do |row_idx|
+        (0...columns_count).each do |col_idx|
+          next if visited_cells[row_idx][col_idx]
+
+          row_span = 1
+          while row_idx + row_span < logical_boundaries.size - 1
+            boundary_y = logical_boundaries[row_idx + row_span]
+            break if raw_grid[boundary_y][col_idx].strip.match?(HORIZONTAL_RULE_REGEX)
+            row_span += 1
+          end
+
+          (0...row_span).each { |dr| visited_cells[row_idx + dr][col_idx] = true }
+
+          # Extract internal text for the current cell box
+          text_lines = []
+          y_start = logical_boundaries[row_idx] + 1
+          y_end = logical_boundaries[row_idx + row_span] - 1
+          (y_start..y_end).each { |yy| text_lines << raw_grid[yy][col_idx] }
+
+          cells << {
+            row_index: row_idx,
+            col_index: col_idx,
+            row_span: row_span,
+            col_span: 1,
+            text_lines: text_lines,
+            align: determine_alignment(text_lines),
+            is_header: (row_idx == 0)
+          }
+        end
+      end
+
+      merge_column_spans(cells)
+    end
+
+    def self.parse_emacs(lines)
+      cells = []
+
+      # 1. Determine vertical column boundaries by finding '+' in the first line
+      grid_x = lines.first.enum_for(:scan, /\+/).map { Regexp.last_match.begin(0) }
+
+      # 2. Determine horizontal row boundaries
+      grid_y = []
+      lines.each_with_index do |line, i|
+        is_boundary = (0...grid_x.size - 1).any? do |col_idx|
+          left_char = line[grid_x[col_idx]]
+          right_char = line[grid_x[col_idx + 1]]
+          if (left_char == '+' || left_char == '|') && (right_char == '+' || right_char == '|')
+            segment = line[(grid_x[col_idx] + 1)...grid_x[col_idx + 1]]
+            segment && !segment.strip.empty? && segment.strip.match?(HORIZONTAL_RULE_REGEX)
           else
             false
           end
         end
+        grid_y << i if is_boundary
       end
 
-      cells = []
-      visited = Array.new(grid_y.size - 1) { Array.new(grid_x.size - 1, false) }
+      visited_cells = Array.new(grid_y.size - 1) { Array.new(grid_x.size - 1, false) }
 
-      (0...grid_y.size - 1).each do |r|
-        (0...grid_x.size - 1).each do |c|
-          next if visited[r][c]
+      # 3. Traverse the identified boundaries to map cells
+      (0...grid_y.size - 1).each do |row_idx|
+        (0...grid_x.size - 1).each do |col_idx|
+          next if visited_cells[row_idx][col_idx]
 
-          cs = 1
-          while c + cs < grid_x.size - 1
-            y_check = grid_y[r] + 1
-            y_check = grid_y[r] if y_check == grid_y[r + 1]
-            char = lines[y_check][grid_x[c + cs]]
+          # Calculate column span by reading across
+          col_span = 1
+          while col_idx + col_span < grid_x.size - 1
+            y_check = grid_y[row_idx] + 1
+            y_check = grid_y[row_idx] if y_check == grid_y[row_idx + 1]
+            char = lines[y_check][grid_x[col_idx + col_span]]
             break if char == '|' || char == '+'
-            cs += 1
+            col_span += 1
           end
 
-          rs = 1
-          while r + rs < grid_y.size - 1
-            seg = lines[grid_y[r + rs]][(grid_x[c] + 1)...(grid_x[c + cs])]
-            break if seg && !seg.strip.empty? && seg.strip.match?(/^[-=+]+$/)
-            rs += 1
+          # Calculate row span by reading downwards
+          row_span = 1
+          while row_idx + row_span < grid_y.size - 1
+            segment = lines[grid_y[row_idx + row_span]][(grid_x[col_idx] + 1)...(grid_x[col_idx + col_span])]
+            break if segment && !segment.strip.empty? && segment.strip.match?(HORIZONTAL_RULE_REGEX)
+            row_span += 1
           end
 
-          (r...r + rs).each { |vr| (c...c + cs).each { |vc| visited[vr][vc] = true } }
-
-          text_lines = ((grid_y[r] + 1)...grid_y[r + rs]).map { |yy| lines[yy][(grid_x[c] + 1)...grid_x[c + cs]] }
-
-          is_header = type == :org_complex ? (r == 0) : (r == 0 && lines[grid_y[1]].include?('='))
-
-          align = "left"
-          if (first_text = text_lines.find { |l| !l.strip.empty? })
-            l_space, r_space = first_text[/\A\s*/].length, first_text[/\s*\z/].length
-            align = "center" if l_space > 1 && r_space > 1
-            align = "right" if l_space > 1 && r_space <= 1
+          # Mark the spanned area as visited
+          (row_idx...row_idx + row_span).each do |vr|
+            (col_idx...col_idx + col_span).each { |vc| visited_cells[vr][vc] = true }
           end
 
-          cells << { r: r, c: c, rs: rs, cs: cs, text_lines: text_lines, align: align, is_header: is_header }
+          # Extract internal text for the current cell box
+          text_lines = ((grid_y[row_idx] + 1)...grid_y[row_idx + row_span]).map do |yy|
+            lines[yy][(grid_x[col_idx] + 1)...grid_x[col_idx + col_span]]
+          end
+
+          cells << {
+            row_index: row_idx,
+            col_index: col_idx,
+            row_span: row_span,
+            col_span: col_span,
+            text_lines: text_lines,
+            align: determine_alignment(text_lines),
+            is_header: (row_idx == 0 && lines[grid_y[1]].include?('='))
+          }
         end
       end
 
-      if type == :org_complex
-        new_cells = []
-        cells.group_by { |cell| cell[:r] }.each do |r, row_cells|
-          i = 0
-          while i < row_cells.size
-            cell = row_cells[i]
-            if cell[:text_lines].map(&:strip).join("").start_with?("<span")
-              merged_cs = cell[:cs]
-              i += 1
-              while i < row_cells.size
-                next_cell = row_cells[i]
-                merged_cs += next_cell[:cs]
-                break if next_cell[:text_lines].map(&:strip).join("") == ">"
-                i += 1
-              end
-              cell[:cs], cell[:text_lines] = merged_cs, []
+      cells
+    end
+
+    # --- Helpers ---
+
+    def self.determine_alignment(text_lines)
+      align = "left"
+      if (first_text = text_lines.find { |l| !l.strip.empty? })
+        left_spaces = first_text[/\A\s*/].length
+        right_spaces = first_text[/\s*\z/].length
+        align = "center" if left_spaces > 1 && right_spaces > 1
+        align = "right" if left_spaces > 1 && right_spaces <= 1
+      end
+      align
+    end
+
+    def self.merge_column_spans(cells)
+      merged_cells = []
+      cells.group_by { |cell| cell[:row_index] }.each do |_, row_cells|
+        index = 0
+        while index < row_cells.size
+          current_cell = row_cells[index]
+
+          # Check if the cell acts as a <span ... > start marker
+          if current_cell[:text_lines].map(&:strip).join("").start_with?("<span")
+            total_col_span = current_cell[:col_span]
+            index += 1
+
+            # Traverse subsequent cells until the closing '>' is found
+            while index < row_cells.size
+              next_cell = row_cells[index]
+              total_col_span += next_cell[:col_span]
+              break if next_cell[:text_lines].map(&:strip).join("") == ">"
+              index += 1
             end
-            new_cells << cell; i += 1
-          end
-        end
-        cells = new_cells
-      end
 
+            current_cell[:col_span] = total_col_span
+            current_cell[:text_lines] = []
+          end
+
+          merged_cells << current_cell
+          index += 1
+        end
+      end
+      merged_cells
+    end
+
+    # --- HTML Rendering ---
+
+    def self.render_html(cells, preserve_newlines)
       html = "<table>\n"
-      build_tbody = ->(cell_group) {
-        return "" if cell_group.empty?
-        res = ""
-        cell_group.group_by { |c| c[:r] }.each do |r, row_cells|
-          res << "    <tr>\n"
-          row_cells.sort_by { |c| c[:c] }.each do |cell|
-            tag = cell[:is_header] ? "th" : "td"
-            attrs = []
-            attrs << "colspan=\"#{cell[:cs]}\"" if cell[:cs] > 1
-            attrs << "rowspan=\"#{cell[:rs]}\"" if cell[:rs] > 1
-            attrs << "align=\"#{cell[:align]}\" valign=\"top\""
 
-            if preserve_newlines
-              content = cell[:text_lines].map(&:strip).drop_while(&:empty?)
-                          .reverse.drop_while(&:empty?).reverse.join("<br>\n")
-            else
-              content = cell[:text_lines].map(&:strip).reject(&:empty?).join(" ")
-            end
+      header_cells = cells.select { |c| c[:is_header] }
+      body_cells = cells.reject { |c| c[:is_header] }
 
-            if content.empty?
-              res << "      <#{tag} #{attrs.join(' ')}></#{tag}>\n"
-            elsif content.include?("<br>")
-              res << "      <#{tag} #{attrs.join(' ')}>\n        #{content.gsub("\n", "\n        ")}</#{tag}>\n"
-            else
-              res << "      <#{tag} #{attrs.join(' ')}>#{content}</#{tag}>\n"
-            end
-          end
-          res << "    </tr>\n"
-        end
-        res
-      }
+      html << "  <thead>\n#{build_tbody_html(header_cells, preserve_newlines)}  </thead>\n" unless header_cells.empty?
+      html << "  <tbody>\n#{build_tbody_html(body_cells, preserve_newlines)}  </tbody>\n</table>"
 
-      html << "  <thead>\n#{build_tbody.call(cells.select { |c| c[:is_header] })}  </thead>\n" if cells.any? { |c| c[:is_header] }
-      html << "  <tbody>\n#{build_tbody.call(cells.reject { |c| c[:is_header] })}  </tbody>\n</table>"
       "\n#+BEGIN_HTML\n#{html}\n#+END_HTML\n"
+    end
+
+    def self.build_tbody_html(cell_group, preserve_newlines)
+      return "" if cell_group.empty?
+
+      result = ""
+      cell_group.group_by { |c| c[:row_index] }.each do |_, row_cells|
+        result << "    <tr>\n"
+        row_cells.sort_by { |c| c[:col_index] }.each do |cell|
+          tag = cell[:is_header] ? "th" : "td"
+          attrs = []
+          attrs << "colspan=\"#{cell[:col_span]}\"" if cell[:col_span] > 1
+          attrs << "rowspan=\"#{cell[:row_span]}\"" if cell[:row_span] > 1
+          attrs << "align=\"#{cell[:align]}\" valign=\"top\""
+
+          content = process_cell_content(cell[:text_lines], preserve_newlines)
+
+          if content.empty?
+            result << "      <#{tag} #{attrs.join(' ')}></#{tag}>\n"
+          elsif content.include?("<br>")
+            result << "      <#{tag} #{attrs.join(' ')}>\n        #{content.gsub("\n", "\n        ")}</#{tag}>\n"
+          else
+            result << "      <#{tag} #{attrs.join(' ')}>#{content}</#{tag}>\n"
+          end
+        end
+        result << "    </tr>\n"
+      end
+      result
+    end
+
+    def self.process_cell_content(text_lines, preserve_newlines)
+      if preserve_newlines
+        text_lines.map(&:strip).drop_while(&:empty?).reverse.drop_while(&:empty?).reverse.join("<br>\n")
+      else
+        content = text_lines.map(&:strip).reject(&:empty?).join(" ")
+        content.gsub(CJK_SPACE_REGEX, '\1')
+      end
     end
   end
 end
