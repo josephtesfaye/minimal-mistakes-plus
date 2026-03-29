@@ -95,6 +95,11 @@
   li:not(.toc li) :is(p, ul, ol) {
     margin: 0em auto 0.5em 0em;
   }
+
+  // Prevent table headers from line-wrapping to ensure proper column distribution
+  table th {
+    white-space: nowrap;
+  }
 }
 
 span.underline {
