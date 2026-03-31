@@ -20,26 +20,20 @@ author:
     - label: Home
       icon: fas fa-fw fa-home
       url: https://josephtesfaye.com
-    - label: Instagram
-      icon: fab fa-fw fa-instagram
-      url: https://www.instagram.com/orcharinth
     - label: GitHub
       icon: fab fa-fw fa-github
-      url: https://github.com/josephtesfaye
+      url: https://github.com/josephtesfaye/minimal-mistakes-plus/
 footer:
   links:
     - label: Home
       icon: fas fa-fw fa-home
       url: https://josephtesfaye.com
-    - label: Instagram
-      icon: fab fa-fw fa-instagram
-      url: https://www.instagram.com/orcharinth
     - label: GitHub
       icon: fab fa-fw fa-github
-      url: https://github.com/josephtesfaye
+      url: https://github.com/josephtesfaye/minimal-mistakes-plus/
 
 copyright: Joseph Huang
-copyright_url: /josephs-blog/about/
+copyright_url: /minimal-mistakes-plus/about/
 
 include:
   - _pages

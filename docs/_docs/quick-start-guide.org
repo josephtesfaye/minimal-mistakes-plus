@@ -5,15 +5,416 @@ last_modified_at: 2026-03-15
 toc: true
 ---
 
-Here's how to quickly install and setup Minimal Mistakes Plus for use with
-GitHub Actions.
+Welcome to the documentation site of Minimal Mistakes Plus! Minimal Mistakes
+Plus is a plugin extending the beloved Jekyll theme [[https://mmistakes.github.io/minimal-mistakes/][Minimal Mistakes]].
 
-** Using Minimal Mistakes Plus Scaffold (The Fastest Approach)
+I've been using Minimal Mistakes for blogging and documenting my projects for a
+long time, and I have made lots of customizations along the way. I figure maybe
+I should release them in a standalone Gem so that others and I can reuse those
+features painlessly.
 
-1. Clone or download the repository [[https://github.com/josephtesfaye/minimal-mistakes-plus-scaffold][Minimal Mistakes Plus Scaffold]].
-2. In its top folder run:
+It provides additional features besides everything in Jekyll and Minimal
+Mistakes, such as:
+
+- Dark mode toggling
+- Drafting in Org Mode
+- Numbering headings automatically
+- Encrypting posts with a password
+- and more...
+
+This site itself is both the documentation and demonstration of the plugin.
+
+Here's how to quickly install and use Minimal Mistakes Plus for your site!
+
+* Installation
+** Using Scaffold (Fastest)
+
+I've provided a scaffold or template project called [[https://github.com/josephtesfaye/minimal-mistakes-plus-scaffold][Minimal Mistakes Plus Scaffold]],
+which uses the =minimal-mistakes-jekyll= theme and the =minimal-mistakes-plus=
+plugin. You can clone or download the repository, and then in its root folder
+run these commands:
+
+#+begin_src sh
+bundle install
+bundle exec jekyll serve
+#+end_src
+
+Now you can view the site instantly on your computer and start adding contents
+to it without making any setup or configuration!
+
+** Scaffold from Scratch
+{: .ordered}
+
+Let's say you want to set up a documentation site in the =docs/= folder of your
+project. You need to configure a local Jekyll environment and deploy it using
+GitHub Actions. Standard GitHub Pages builds block custom plugins for security,
+so a custom Action is required.
+
+Here is the step-by-step process from scratch:
+
+*** Scaffold the directory
+
+1. Navigate to the root of your =foo= repository and create the =docs/= folder.
 
    #+begin_src sh
-   bundle install
-   bundle exec jekyll serve
+   cd ~/projects/foo
+   mkdir docs
+   cd docs
    #+end_src
+
+2. Create the =Gemfile=
+
+   Inside the =docs/= directory, create a =Gemfile= with the following content:
+
+   #+begin_src ruby
+   source 'https://rubygems.org'
+
+   gem 'faraday-retry'
+   gem 'jekyll', '~> 3.9'
+   gem 'kramdown-parser-gfm'
+   gem 'minima', '~> 2.5'
+   gem 'minimal-mistakes-jekyll'
+   gem 'org-ruby'
+   gem 'webrick'
+
+   group :jekyll_plugins do
+     gem 'jekyll-algolia'
+     gem 'jekyll-feed'
+     gem 'jekyll-gist'
+     gem 'jekyll-include-cache'
+     gem 'jekyll-paginate'
+     gem 'jekyll-sitemap'
+     gem 'jemoji'
+     gem 'minimal-mistakes-plus', github: 'josephtesfaye/minimal-mistakes-plus', branch: 'main'
+   end
+
+   # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem
+   # and associated library.
+   platforms :mingw, :x64_mingw, :mswin, :jruby do
+     gem 'tzinfo', '~> 1.2'
+     gem 'tzinfo-data'
+   end
+
+   # Performance-booster for watching directories on Windows
+   gem 'wdm', '~> 0.1.1', :platforms => [:mingw, :x64_mingw, :mswin]
+   #+end_src
+
+3. Create the =_config.yml=
+
+   Create your Jekyll configuration file in =docs/_config.yml= to set the theme
+   and activate your plugin.
+
+   #+begin_src yaml
+   theme: minimal-mistakes-jekyll
+
+   title: Foo Documentation
+   url: "https://<your-github-username>.github.io"
+   baseurl: "/foo"    # Crucial for project pages on GitHub
+   author:
+     name: Jane Doe
+     avatar: https://mmistakes.github.io/minimal-mistakes/assets/images/mm-free-feature.png
+     bio: An explorer at heart
+     location: Tokyo, Japan
+     links:
+       - label: GitHub
+         icon: fab fa-fw fa-github
+         url: https://github.com/<your-github-username>/foo/
+   footer:
+     links:
+       - label: GitHub
+         icon: fab fa-fw fa-github
+         url: https://github.com/<your-github-username>/foo/
+   copyright: Jane Doe
+   copyright_url: /foo/about/
+
+   search: true
+   search_full_content: true
+
+   include:
+     - _pages
+   exclude:
+     - "*.sublime-project"
+     - "*.sublime-workspace"
+     - vendor
+     - .asset-cache
+     - .bundle
+     - .jekyll-assets-cache
+     - .sass-cache
+     - assets/js/plugins
+     - assets/js/_main.js
+     - assets/js/vendor
+     - Capfile
+     - CHANGELOG
+     - config
+     - Gemfile
+     - Gruntfile.js
+     - gulpfile.js
+     - LICENSE
+     - log
+     - node_modules
+     - package.json
+     - package-lock.json
+     - Rakefile
+     - README
+     - tmp
+
+   encoding: "utf-8"
+   markdown_ext: "markdown,mkdown,mkdn,mkd,md"
+   markdown: kramdown
+   highlighter: rouge
+   lsi: false
+   excerpt_separator: "\n\n"
+   incremental: false
+   kramdown:
+     input: GFM
+     hard_wrap: false
+     auto_ids: true
+     footnote_nr: 1
+     entity_output: as_char
+     toc_levels: 1..6
+     smart_quotes: lsquo,rsquo,ldquo,rdquo
+     enable_coderay: false
+
+   # Outputting
+   permalink: /:categories/:title/
+   # paginate: 10
+   # paginate_path: /page:num/
+   timezone: Tokyo/Japan
+
+   plugins:
+     - jekyll-paginate
+     - jekyll-sitemap
+     - jekyll-gist
+     - jekyll-feed
+     - jemoji
+     - jekyll-include-cache
+
+   whitelist:
+     - jekyll-paginate
+     - jekyll-sitemap
+     - jekyll-gist
+     - jekyll-feed
+     - jekyll-include-cache
+
+   category_archive:
+     type: liquid
+     path: /categories/
+   tag_archive:
+     type: liquid
+     path: /tags/
+
+   compress_html:
+     clippings: all
+     ignore:
+       envs: development
+
+   # Collections
+   collections:
+     docs:
+       output: true
+       permalink: /:collection/:path/
+
+   defaults:
+     # _docs
+     - scope:
+         path: ""
+         type: docs
+       values:
+         layout: single
+         read_time: false
+         author_profile: false
+         share: false
+         comments: false
+         toc_sticky: true
+         sidebar:
+           nav: "docs"
+   #+end_src
+
+*** Create the landing page
+
+1. In =_config.yml= add:
+
+   #+begin_src yaml
+   include:
+     - _pages
+   #+end_src
+
+2. In =docs/_pages/= create a new file named =home.md= with the following
+   content:
+
+   #+begin_src text
+   ---
+   layout: splash
+   permalink: /
+   hidden: true
+   header:
+     overlay_color: "#5e616c"
+     actions:
+       - label: "<i class='fas fa-download'></i> Install now"
+         url: "/docs/quick-start-guide/"
+   excerpt: >
+     A flexible two-column Jekyll theme. Perfect for building personal sites, blogs, and portfolios.<br />
+     <small><a href="https://github.com/mmistakes/minimal-mistakes/releases/tag/4.26.0">Latest release v4.26.0</a></small>
+   ---
+
+   This is the landing page...
+   #+end_src
+
+*** Create the "User Guide" documentation
+
+1. In =_config.yml= define a collection called ~docs~ and set the default values for
+   pages in the collection:
+
+   #+begin_src yaml
+   collections:
+     docs:
+       output: true
+       permalink: /:collection/:path/
+
+   defaults:
+     - scope:
+         path: ""
+         type: docs
+       values:
+         layout: single
+         read_time: false
+         author_profile: false
+         share: false
+         comments: false
+         toc_sticky: true
+         sidebar:
+           nav: "docs"
+   #+end_src
+
+2. Create the main menu and sidebar menus in =_data/navigation.yml=:
+
+   #+begin_src yaml
+   main:
+     - title: "User Guide"
+       url: /docs/quick-start-guide/
+
+   docs:
+     - title: Getting Started
+       children:
+         - title: "Quick-Start Guide"
+           url: /docs/quick-start-guide/
+   #+end_src
+
+3. Create the page =_docs/01-quick-start-guide.md=:
+
+   #+begin_src text
+   ---
+   title: "Quick-Start Guide"
+   permalink: /docs/quick-start-guide/
+   excerpt: "How to quickly install and setup Minimal Mistakes Plus for use with GitHub Pages."
+   last_modified_at: 2026-03-15
+   redirect_from:
+     - /theme-setup/
+   toc: true
+   ---
+
+   Welcome to project foo...
+   #+end_src
+
+*** Run Locally
+
+While still inside the =docs/= directory, install the dependencies and start the
+local server.
+
+#+begin_src sh
+bundle install
+bundle exec jekyll serve
+#+end_src
+
+Visit http://127.0.0.1:4000/foo/ to ensure the site renders with the Minimal
+Mistakes layout and that your plugin loads without errors.
+
+* Deployment with GitHub Actions
+{: .ordered}
+
+** Configure GitHub Actions for Deployment
+
+Because standard GitHub Pages will silently disable =minimal-mistakes-plus= as an
+"unrecognized plugin," you must use GitHub Actions to build the site.
+
+1. At the root of your repository (not in =docs/=), create the file
+   =.github/workflows/pages.yml= and paste this workflow:
+
+   #+begin_src yaml
+   name: Build and Deploy Docs
+
+   on:
+     push:
+       branches:
+         - main
+         - master
+
+   permissions:
+     contents: read
+     pages: write
+     id-token: write
+
+   jobs:
+     build:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Checkout
+           uses: actions/checkout@v4
+
+         - name: Setup Ruby
+           uses: ruby/setup-ruby@v1
+           with:
+             ruby-version: '3.1'
+             bundler-cache: true
+             working-directory: docs
+
+         - name: Setup Pages
+           uses: actions/configure-pages@v4
+
+         - name: Build with Jekyll
+           working-directory: docs
+           run: bundle exec jekyll build --destination ../_site
+           env:
+             JEKYLL_ENV: production
+
+         - name: Upload artifact
+           uses: actions/upload-pages-artifact@v3
+           with:
+             path: _site
+
+     deploy:
+       environment:
+         name: github-pages
+         url: ${{ steps.deployment.outputs.page_url }}
+       runs-on: ubuntu-latest
+       needs: build
+       steps:
+         - name: Deploy to GitHub Pages
+           id: deployment
+           uses: actions/deploy-pages@v4
+   #+end_src
+
+2. To install dependencies correctly on GitHub Actions you need to add the
+   platform =x86_64-linux= to your lockfiles (=Gemfile.lock=). Run the following
+   command under =docs/=:
+
+   #+begin_src sh
+   bundle lock --add-platform x86_64-linux
+   #+end_src
+
+   Then commit the changes:
+
+   #+begin_src sh
+   git add Gemfile.lock docs/Gemfile.lock
+   git commit -m "Add x86_64-linux platform to Gemfile.lock for CI compatibility"
+   git push
+   #+end_src
+
+** Enable GitHub Actions Deployment:
+
+1. Go to your repository on GitHub.
+2. Click *Settings* > *Pages*.
+3. Under *Build and deployment*, change the *Source* dropdown from "Deploy from
+   a branch" to *GitHub Actions*.
+4. Commit all your files and push to GitHub. The action will trigger, build your
+   site from the =docs/= directory using your parent gem, and publish it.
