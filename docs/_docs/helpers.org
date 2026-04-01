@@ -280,27 +280,44 @@ gallery3:
 
 * Furigana
 
-You can write furigana for Japanese Kanji words like the following:
+You can write Japanese furigana in the following format:
 
 #+begin_src text
-本｜日（ほん｜じつ）はお時｜間（じ｜かん）をいただき、ありがとうございます。私は
-マカオにあるマカオ理｜工｜大｜学（り｜こう｜だい｜がく）を4年｜制（ねん｜せい）
-の学｜士（がく｜し）課｜程（か｜てい）で卒業（そつ｜ぎょう）しました。
+（X｜Y｜Z：X1｜Y1｜Z1）
 #+end_src
 
-本｜日（ほん｜じつ）はお時｜間（じ｜かん）をいただき、ありがとうございます。私は
-マカオにあるマカオ理｜工｜大｜学（り｜こう｜だい｜がく）を4年｜制（ねん｜せい）
-の学｜士（がく｜し）課｜程（か｜てい）で卒業（そつ｜ぎょう）しました。
+where X1 is the hiragana form of X, Y1 is the hiragana form of Y, and so on. ~X｜
+Y｜Z｜~ doesn't mean 3 characters, but 3 parts. Each part can be one or more
+characters. There can be one or more parts (not just 3). If there's no ~｜~
+present, there's only one part. There can be newlines or linefeeds inside this
+structure.
 
-You can also write furigana for ~Katakana（English）~ pairs, that is, if matched,
-put the English above the Katakana word just like furigana. For example:
+In this way, the following examples can be parsed to furigana correctly:
 
 #+begin_src text
-クラウド（cloud）ネイティブ（native）なマルチテナント（multi-tenant）型バックエ
-ンド（backend）プラットフォーム（platform）の設計、クラウドプラットフォーム
-（cloud platform）、モビリティサービス（mobility service）
+（本｜日：ほん｜じつ）はお（時｜間：じ｜かん）をいただき、ありがとうございます。
+私はマカオにあるマカオ（理｜工｜大｜学：り｜こう｜だい｜がく）を（4｜年｜制：よ｜
+ねん｜せい）の（学｜士：がく｜し）（課｜程：か｜てい）で（卒｜業：そつ｜ぎょう）
+しました。（3｜ヶ｜月：さん｜か｜げつ）後、（鶴｜ヶ｜崎：つる｜が｜さき）さんと
+会う。
 #+end_src
 
-クラウド（cloud）ネイティブ（native）なマルチテナント（multi-tenant）型バックエ
-ンド（backend）プラットフォーム（platform）の設計、クラウドプラットフォーム
-（cloud platform）、モビリティサービス（mobility service）
+（本｜日：ほん｜じつ）はお（時｜間：じ｜かん）をいただき、ありがとうございます。
+私はマカオにあるマカオ（理｜工｜大｜学：り｜こう｜だい｜がく）を（4｜年｜制：よ｜
+ねん｜せい）の（学｜士：がく｜し）（課｜程：か｜てい）で（卒｜業：そつ｜ぎょう）
+しました。（3｜ヶ｜月：さん｜か｜げつ）後、（鶴｜ヶ｜崎：つる｜が｜さき）さんと
+会う。
+
+This format should also work for katakana words whose furigana is an English
+word, that is, if matched, put the English above the Katakana word just like
+furigana. For example:
+
+#+begin_src text
+（クラウド｜ネイティブ：cloud｜native）な（マルチテナント：multi-tenant）型（バッ
+クエンド：backend）（プラットフォーム：platform）の設計、（クラウドプラットフォー
+ム：cloud platform）、（モビリティサービス：mobility service）
+#+end_src
+
+（クラウド｜ネイティブ：cloud｜native）な（マルチテナント：multi-tenant）型（バッ
+クエンド：backend）（プラットフォーム：platform）の設計、（クラウドプラットフォー
+ム：cloud platform）、（モビリティサービス：mobility service）
