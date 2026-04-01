@@ -3,7 +3,7 @@ require "nokogiri"
 module MinimalMistakesPlus
   # Regular expression to capture the （Base：Ruby） format, including newlines
   # (using the 'm' modifier to match across newlines)
-  FURIGANA_REGEX = /（([^：]+?)：([^）]+?)）/m
+  FURIGANA_REGEX = /（([^（）：]+?)：([^（）：]+?)）/m
 
   module Furigana
     def self.process(doc)
