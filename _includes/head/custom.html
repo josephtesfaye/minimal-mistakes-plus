@@ -1,3 +1,74 @@
+<!-- Enable dark mode -->
 {% if site.dark_mode_toggle %}
 <script src="{{ '/assets/js/dark_mode_toggle.js' | relative_url }}"></script>
 {% endif %}
+
+<!-- Make the post width wider when `author_profile: false` -->
+{% if page.author_profile == false and page.sidebar.nav == blank %}
+<style>
+  /* Only apply these styles if the viewport is at least 80em wide, which is
+     equivalent to 1280px (on a standard browser where 1em = 16px). */
+  @media (min-width: 80em) {
+    .page, .archive, .page__related {
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 64em) {
+    .breadcrumbs ol, .page__related {
+      float: left;
+    }
+  }
+</style>
+{% endif %}
+
+<script>
+  ['mousedown', 'click', 'touchstart'].forEach(function (event) {
+    document.addEventListener(event, function (e) {
+      if (e.target.closest('.mfp-bottom-bar'))
+        e.stopPropagation();
+    }, true);
+  });
+</script>
+
+<!-- Enable sticky TOC for mobile -->
+<script>
+  function initMobileTOC() {
+    var toc = document.querySelector('.sidebar__right.sticky .toc');
+    // Only initialize if a sticky TOC exists and the button hasn't been added yet
+    if (toc && !document.querySelector('.toc-mobile-btn')) {
+      document.body.classList.add('has-toc');
+
+      var btn = document.createElement('button');
+      btn.className = 'toc-mobile-btn';
+      btn.innerHTML = '<i class="fas fa-list-ul"></i>';
+      btn.setAttribute('aria-label', 'Toggle Table of Contents');
+      document.body.appendChild(btn);
+
+      // Toggle TOC visibility on button click
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toc.classList.toggle('is-active');
+      });
+
+      // Close TOC when clicking anywhere outside of it
+      document.addEventListener('click', function (e) {
+        if (toc.classList.contains('is-active') && !toc.contains(e.target) && e.target !== btn) {
+          toc.classList.remove('is-active');
+        }
+      });
+
+      // Automatically close the TOC popup after tapping a link inside it
+      // var tocLinks = toc.querySelectorAll('a');
+      // tocLinks.forEach(function (link) {
+      //   link.addEventListener('click', function () {
+      //     if (window.innerWidth <= 1024) { // Matches the 64em media query
+      //       toc.classList.remove('is-active');
+      //     }
+      //   });
+      // });
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initMobileTOC);
+</script>

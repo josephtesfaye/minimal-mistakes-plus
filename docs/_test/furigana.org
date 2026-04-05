@@ -1,0 +1,36 @@
+---
+title: "Furigana"
+permalink: /test/furigana/
+last_modified_at: 2026-04-05T16:00:49+09:00
+toc: true
+toc_stick: true
+classes: narrow
+furigana: true
+furigana_mode: hiragana
+furigana_selectable: false
+furigana_mouse_over: false
+---
+
+* Auto parsing
+
+本日はお時間をいただき、ありがとうございます。私はマカオにあるマカオ理工大学を4
+年制の学士課程で卒業しました。3ヶ月後、鶴ヶ崎さんと会う。
+
+* Manual
+
+（本｜日：ほん｜じつ）はお時間をいただき、ありがとうございます。私はマカオにある
+マカオ（理｜工｜大｜学：り｜こう｜だい｜がく）を（4｜年｜制：よ｜ねん｜せい）の
+（学｜士：がく｜し）（課｜程：か｜てい）で（卒｜業：そつ｜ぎょう）しました。
+（3｜ヶ｜月：さん｜か｜げつ）後、（鶴｜ヶ｜崎：つる｜が｜さき）さんと会う。
+
+* English
+
+（クラウド｜ネイティブ：cloud｜native）な（マルチテナント：multi-tenant）型（バッ
+クエンド：backend）（プラットフォーム：platform）の設計、（クラウドプラットフォー
+ム：cloud platform）、（モビリティサービス：mobility service）
+
+* Attributes
+
+{: furigana_mode="katakana" furigana_selectable="true" furigana_mouse_over="true"}
+本日はお時間をいただき、ありがとうございます。私はマカオにあるマカオ理工大学を4
+年制の学士課程で卒業しました。3ヶ月後、鶴ヶ崎さんと会う。
