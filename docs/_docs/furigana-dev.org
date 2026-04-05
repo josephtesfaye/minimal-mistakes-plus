@@ -438,19 +438,25 @@ How does this happen? Fix it.
 
 Gemini (Pro):
 
-This happens because GitHub Pages/Actions runs Jekyll in =production= mode,
-which automatically enables aggressive SEO and URL-rewriting plugins.
+This is a deep, notorious quirk caused by a combination of Kuromoji's internal
+code and the browser's URL resolution rules. Here is exactly what is happening:
 
-These plugins scan your generated HTML to "fix" links. When they see the string
-=https://cdn.jsdelivr.net/...= inside your JavaScript, the regex mistakenly
-thinks it's an internal site link and forces your domain name in front of it
-(=https://josephtesfaye.com/cdn.jsdelivr...=). Locally, Jekyll runs in
-=development= mode, so these production plugins are disabled, which is why it
-works perfectly on your machine.
+1. The ~path.join~ Bug: Inside the Kuromoji library, the loader combines your
+   dictPath with the filename using a browser polyfill of Node's ~path.join()~.
+   This polyfill strictly normalizes paths and strips out double slashes. It
+   takes "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/" and turns it into
+   "https:/cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/base.dat.gz" (with only one
+   slash after =https:=).
 
-We can completely bulletproof the script against these aggressive parsers by
-splitting the URL strings into two pieces (="https://" + "cdn.jsdelivr..."=).
-This makes the URLs invisible to Jekyll's static analysis, ensuring the browser
-pieces them together correctly. I've also added an initialization timeout to
-guarantee the converter gracefully cancels instead of freezing if a network
-error occurs.
+2. Why it worked locally (HTTP): Your local server runs on =http://=. When the
+   browser's XMLHttpRequest tries to fetch =https:/cdn...=, it sees that the
+   scheme (=https=) doesn't match your local server (=http=). Because it's a
+   cross-scheme request, the browser safely auto-corrects the missing slash and
+   fetches the dictionary from the external CDN.
+
+3. Why it failed in Actions (HTTPS): GitHub Pages runs on =https://=. When the
+   browser sees the request to =https:/cdn...=, the schemes match perfectly.
+   According to standard web specification, a matching scheme with a single slash
+   is treated as a relative absolute-path on the current domain. Therefore, the
+   browser forcefully appends it to your site, resulting in the 404 error at
+   https://josephtesfaye.com/cdn.jsdelivr.net/...!

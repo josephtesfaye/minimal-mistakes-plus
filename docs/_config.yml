@@ -111,7 +111,7 @@ tag_archive:
 compress_html:
   clippings: all
   ignore:
-    envs: [development, production]
+    envs: development
 
 # Collections
 collections:
