@@ -118,9 +118,22 @@ Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
                   let html = await ks.convert(text, { mode: "furigana", to: "hiragana" });
                   const mode = window.frgntrLiveMode || "hiragana";
 
+                  const parser = new DOMParser();
+                  const doc = parser.parseFromString(html, 'text/html');
+
+                  doc.querySelectorAll('ruby').forEach(ruby => {
+                      const rt = ruby.querySelector('rt');
+                      if (!rt) return;
+                      let baseText = "";
+                      ruby.childNodes.forEach(node => {
+                          if (node.nodeType === Node.TEXT_NODE) baseText += node.textContent;
+                      });
+                      if (baseText.trim() === rt.textContent.trim()) {
+                          ruby.replaceWith(baseText);
+                      }
+                  });
+
                   if (mode === "pattern") {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
                     doc.querySelectorAll('ruby').forEach(ruby => {
                         const rt = ruby.querySelector('rt');
                         if (!rt) return;
@@ -133,8 +146,6 @@ Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
                     return;
                   }
 
-                  const parser = new DOMParser();
-                  const doc = parser.parseFromString(html, 'text/html');
                   if (mode === "katakana" || mode === "romaji") {
                       const rts = doc.querySelectorAll('rt');
                       const uniqueReadings = [...new Set(Array.from(rts).map(rt => rt.textContent))];

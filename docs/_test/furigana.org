@@ -23,7 +23,7 @@ furigana_mouse_over: false
 （学｜士：がく｜し）（課｜程：か｜てい）で（卒｜業：そつ｜ぎょう）しました。
 （3｜ヶ｜月：さん｜か｜げつ）後、（鶴｜ヶ｜崎：つる｜が｜さき）さんと会う。
 
-* English
+*English*
 
 （クラウド｜ネイティブ：cloud｜native）な（マルチテナント：multi-tenant）型（バッ
 クエンド：backend）（プラットフォーム：platform）の設計、（クラウドプラットフォー
@@ -34,3 +34,8 @@ furigana_mouse_over: false
 {: furigana_mode="katakana" furigana_selectable="true" furigana_mouse_over="true"}
 本日はお時間をいただき、ありがとうございます。私はマカオにあるマカオ理工大学を4
 年制の学士課程で卒業しました。3ヶ月後、鶴ヶ崎さんと会う。
+
+* Characters not in the dictionary
+
+Some characters can't be parsed automatically, such as 箇 and 个, but then you
+can add Furigana for them manually, such as （箇：か） and （个：か）.

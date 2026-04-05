@@ -293,6 +293,9 @@ module MinimalMistakesPlus
           res_html = results[job[:id].to_s]
           next unless res_html
 
+          # Strip the <ruby> tags whenever the base text perfectly matches the reading text
+          res_html.gsub!(/<ruby>([^<]+)<rp>\(<\/rp><rt>\1<\/rt><rp>\)<\/rp><\/ruby>/, '\1')
+
           # 4. Inject specific HTML attributes to match Furiganator format exactly.
           # Note: Kuroshiro skips modifying our <ruby data-manual="true"> blocks,
           # so replacing basic <ruby> explicitly targets only the auto-generated ones.

@@ -319,6 +319,33 @@ dictionaries automatically on the very first run.
          @stdin, @stdout, @stderr, @wait_thr = Open3.popen3("node #{script_path}")
 #+end_src
 
+** Bug Fixes
+*** Characters not found in the dictionary
+
+Some characters are parsed incorrectly, such as 箇 and 个:
+
+#+begin_src html
+<p>Some characters are parsed incorrectly, such as <ruby furiganated="true">箇<rp>(</rp><rt class="frgntr_unselectable">箇</rt><rp>)</rp></ruby> or <ruby furiganated="true">个<rp>(</rp><rt class="frgntr_unselectable">个</rt><rp>)</rp></ruby>:</p>
+#+end_src
+
+whose Furigana is added as itself. Is this caused by the kuroshiro backend or
+our own codes?
+
+
+This happens because of the underlying Kuromoji dictionary used by the Kuroshiro
+backend.
+
+When Kuromoji encounters a single kanji character or variant that it doesn't
+have a specific contextual reading for (or treats as an unknown word), it
+defaults to returning the surface character itself as the reading. Kuroshiro
+then sees a kanji character, sees a reading attached to it, and faithfully wraps
+it in a ~<ruby>~ tag, resulting in ~<ruby>箇...<rt>箇</rt>...</ruby>~.
+
+We can easily fix this by filtering the HTML output. We'll add a cleanup step to
+strip the <ruby> tags whenever the base text perfectly matches the reading text.
+We need to do this on both the Ruby backend (for the static build) and the
+JavaScript frontend (for the live converter).
+
 * Furigana Converter
 
 Now I want to be able to add an input box in a post, with which you can paste
@@ -353,7 +380,7 @@ contents (see the source file in the repository).
 Then add to your post:
 
 #+begin_src org
-{% include furigana-converter.html placeholder="Enter your contents..." %}
+{% raw %}{% include furigana-converter.html placeholder="Enter your contents..." %}{% endraw %}
 #+end_src
 
 {: .notice}
