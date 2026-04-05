@@ -72,10 +72,10 @@ Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
 
             try {
               if (typeof window.Kuroshiro === 'undefined') {
-                await loadScript("https://" + "cdn.jsdelivr.net/npm/kuroshiro@1.1.2/dist/kuroshiro.min.js");
+                await loadScript("https://cdn.jsdelivr.net/npm/kuroshiro@1.1.2/dist/kuroshiro.min.js");
               }
               if (typeof window.KuromojiAnalyzer === 'undefined') {
-                await loadScript("https://" + "cdn.jsdelivr.net/npm/kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js");
+                await loadScript("https://cdn.jsdelivr.net/npm/kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js");
               }
 
               const KsClass = window.Kuroshiro.default || window.Kuroshiro;
@@ -83,7 +83,7 @@ Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
 
               const ks = new KsClass();
               const analyzer = new AnalyzerClass({
-                  dictPath: "https://" + "cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/"
+                  dictPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/"
               });
 
               const initPromise = ks.init(analyzer);

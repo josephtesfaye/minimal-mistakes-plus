@@ -100,7 +100,8 @@ a:hover, .pagination li a:hover, .page__taxonomy-item:hover {
 .archive__subtitle,
 .page__content h2,
 .taxonomy__index a,
-.embed-refresh-v2 .nav-primary--refresh {
+.embed-refresh-v2 .nav-primary--refresh,
+.taxonomy__section:not(:last-child) {
   border-bottom-color: var(--border-color);
 }
 
