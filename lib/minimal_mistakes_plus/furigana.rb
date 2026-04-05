@@ -130,27 +130,34 @@ module MinimalMistakesPlus
       # Scenario B: Furigana is globally turned ON
       # -----------------------------------------------------------------------
       global_mode = doc.data['furigana_mode'] || 'hiragana'
-      has_global_selectable = !doc.data['furigana_selectable'].nil?
-      has_global_hover = !doc.data['furigana_mouse_over'].nil?
       f_selectable = doc.data['furigana_selectable'] == true || doc.data['furigana_selectable'] == 'true'
       f_hover = doc.data['furigana_mouse_over'] == true || doc.data['furigana_mouse_over'] == 'true'
 
-      if has_global_selectable || has_global_hover
+      if furigana_enabled
+        global_buttons = []
+        icon_hover = f_hover ? 'fa-eye-slash' : 'fa-eye'
+        global_buttons << "<i class=\"fas #{icon_hover} frgntr-icon\" title=\"Toggle Visibility (Hover Mode)\" onclick=\"frgntrToggleGlobalHover(this)\"></i>"
+
+        icon_selectable = f_selectable ? 'fa-unlock' : 'fa-lock'
+        global_buttons << "<i class=\"fas #{icon_selectable} frgntr-icon\" title=\"Toggle Selectability\" onclick=\"frgntrToggleGlobalSelectable(this)\"></i>"
+
+        toolbar_html = "<header><h4 class=\"nav__title\"><i class=\"fas fa-tools\"></i> Tools</h4></header><div class=\"frgntr-global-toolbar\"><span class=\"frgntr-toolbar-label\">Furigana</span><div class=\"frgntr-icon-group\">#{global_buttons.join(' ')}</div></div>"
+
         sidebar_toc = html_doc.at_css('.sidebar__right.sticky .toc')
         if sidebar_toc
-          global_buttons = []
-          if has_global_hover
-            icon = f_hover ? 'fa-eye-slash' : 'fa-eye'
-            global_buttons << "<i class=\"fas #{icon} frgntr-icon\" title=\"Toggle Visibility (Hover Mode)\" onclick=\"frgntrToggleGlobalHover(this)\"></i>"
-          end
-          if has_global_selectable
-            icon = f_selectable ? 'fa-unlock' : 'fa-lock'
-            global_buttons << "<i class=\"fas #{icon} frgntr-icon\" title=\"Toggle Selectability\" onclick=\"frgntrToggleGlobalSelectable(this)\"></i>"
-          end
-          toolbar_html = "<header><h4 class=\"nav__title\"><i class=\"fas fa-tools\"></i> Tools</h4></header><div class=\"frgntr-global-toolbar\"><span class=\"frgntr-toolbar-label\">Furigana</span><div class=\"frgntr-icon-group\">#{global_buttons.join(' ')}</div></div>"
           sidebar_toc.prepend_child(toolbar_html)
-          modified = true
+        else
+          sidebar_right = html_doc.at_css('.sidebar__right.sticky')
+          if sidebar_right
+            sidebar_right.prepend_child("<nav class=\"toc\">#{toolbar_html}</nav>")
+          else
+            page_content = html_doc.at_css('.page__content')
+            if page_content
+              page_content.prepend_child("<aside class=\"sidebar__right sticky\"><nav class=\"toc\">#{toolbar_html}</nav></aside>")
+            end
+          end
         end
+        modified = true
       end
 
       blocks = html_doc.css('p, li, h1, h2, h3, h4, h5, h6, td, th')
