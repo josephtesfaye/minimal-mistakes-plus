@@ -71,6 +71,18 @@ Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
             }
 
             try {
+              // Fix Kuromoji path.join() bug corrupting HTTPS absolute URLs
+              if (!window._frgntrXhrPatched) {
+                const origOpen = window.XMLHttpRequest.prototype.open;
+                window.XMLHttpRequest.prototype.open = function(method, url) {
+                  if (typeof url === 'string' && url.startsWith('https:/cdn.jsdelivr.net')) {
+                    url = url.replace('https:/cdn.jsdelivr.net', 'https://cdn.jsdelivr.net');
+                  }
+                  return origOpen.apply(this, arguments);
+                };
+                window._frgntrXhrPatched = true;
+              }
+
               if (typeof window.Kuroshiro === 'undefined') {
                 await loadScript("https://cdn.jsdelivr.net/npm/kuroshiro@1.1.2/dist/kuroshiro.min.js");
               }
