@@ -424,3 +424,33 @@ reflect what is actually happening:
  
              try {
 #+end_src
+
+** Bug fixes
+*** Kuromoji Resources Not Found
+
+{: .notice}
+On the GitHub Actions webpage when clicking on the Furigana Converter input box,
+the whole page freezes. Errors reporting kuromoji resources 404 (Not Found) can
+be seen in the console, as shown in the screenshot. It works fine when running
+locally. I think it's because the CDN links are wrong, such as
+https://josephtesfaye.com/cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/base.dat.gz.
+How does this happen? Fix it.
+
+Gemini (Pro):
+
+This happens because GitHub Pages/Actions runs Jekyll in =production= mode,
+which automatically enables aggressive SEO and URL-rewriting plugins.
+
+These plugins scan your generated HTML to "fix" links. When they see the string
+=https://cdn.jsdelivr.net/...= inside your JavaScript, the regex mistakenly
+thinks it's an internal site link and forces your domain name in front of it
+(=https://josephtesfaye.com/cdn.jsdelivr...=). Locally, Jekyll runs in
+=development= mode, so these production plugins are disabled, which is why it
+works perfectly on your machine.
+
+We can completely bulletproof the script against these aggressive parsers by
+splitting the URL strings into two pieces (="https://" + "cdn.jsdelivr..."=).
+This makes the URLs invisible to Jekyll's static analysis, ensuring the browser
+pieces them together correctly. I've also added an initialization timeout to
+guarantee the converter gracefully cancels instead of freezing if a network
+error occurs.

@@ -2,6 +2,7 @@ require 'nokogiri'
 
 Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
   next unless doc.output.include?('@@FRGNTR_LIVE_CONVERTER')
+  next unless doc.output_ext == '.html'
 
   html_doc = Nokogiri::HTML(doc.output)
   inject_live_script = false
@@ -54,8 +55,13 @@ Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
           async function getKuroshiroInstance(statusEl) {
             if (globalKuroshiro) return globalKuroshiro;
             if (kuroshiroInitializing) {
-                while(kuroshiroInitializing) await new Promise(r => setTimeout(r, 100));
+                let attempts = 0;
+                while(kuroshiroInitializing && attempts < 150) {
+                    await new Promise(r => setTimeout(r, 100));
+                    attempts++;
+                }
                 return globalKuroshiro;
+
             }
 
             kuroshiroInitializing = true;
@@ -66,10 +72,10 @@ Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
 
             try {
               if (typeof window.Kuroshiro === 'undefined') {
-                await loadScript("https://cdn.jsdelivr.net/npm/kuroshiro@1.1.2/dist/kuroshiro.min.js");
+                await loadScript("https://" + "cdn.jsdelivr.net/npm/kuroshiro@1.1.2/dist/kuroshiro.min.js");
               }
               if (typeof window.KuromojiAnalyzer === 'undefined') {
-                await loadScript("https://cdn.jsdelivr.net/npm/kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js");
+                await loadScript("https://" + "cdn.jsdelivr.net/npm/kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js");
               }
 
               const KsClass = window.Kuroshiro.default || window.Kuroshiro;
@@ -77,10 +83,13 @@ Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
 
               const ks = new KsClass();
               const analyzer = new AnalyzerClass({
-                  dictPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict"
+                  dictPath: "https://" + "cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/"
               });
 
-              await ks.init(analyzer);
+              const initPromise = ks.init(analyzer);
+              const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Dictionary load timeout")), 15000));
+              await Promise.race([initPromise, timeoutPromise]);
+
               globalKuroshiro = ks;
             } catch (e) {
               console.error("Furigana Live Converter Error:", e);
@@ -168,9 +177,9 @@ Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
 
                   const classAttr = classes.length > 0 ? ` class="${classes.join(' ')}"` : '';
 
-                  html = html.replace(/<ruby>/g, '<ruby furiganated="true">')
-                             .replace(/<rp>\\(<\\/rp><rt>/g, `<rp>(</rp><rt${classAttr}>`)
-                             .replace(/\\n/g, '<br>');
+                  html = html.split('<ruby>').join('<ruby furiganated="true">')
+                             .split('<rp>(</rp><rt>').join(`<rp>(</rp><rt${classAttr}>`)
+                             .split('\\n').join('<br>');
 
                   output.innerHTML = html;
                 }, 400);

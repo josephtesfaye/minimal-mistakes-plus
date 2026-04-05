@@ -303,7 +303,7 @@ module MinimalMistakesPlus
           res_html.gsub!('<rp>(</rp><rt>', "<rp>(</rp><rt#{job[:rt_class_attr]}>")
 
           # Restore protected code blocks and manual rubies
-          job[:placeholders].each { |token, orig_html| res_html.gsub!(token, orig_html) }
+          job[:placeholders].each { |token, orig_html| res_html.gsub!(token) { orig_html } }
 
           res_html.gsub!(' data-manual="true"', '') # Clean up temp property AFTER restoration
           if blocks[job[:id]].inner_html != res_html
@@ -392,5 +392,7 @@ module MinimalMistakesPlus
 end
 
 Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
+  next unless doc.output_ext == '.html'
+
   MinimalMistakesPlus::Furigana.process(doc)
 end
