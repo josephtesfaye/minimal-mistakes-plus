@@ -1,0 +1,11 @@
+---
+title: "Furigana Converter"
+permalink: /test/furigana-converter/
+last_modified_at: 2026-04-05T16:00:49+09:00
+furigana: true
+furigana_mode: hiragana
+furigana_selectable: false
+furigana_mouse_over: false
+---
+
+{% include furigana-converter.html placeholder="Enter your contents..." %}

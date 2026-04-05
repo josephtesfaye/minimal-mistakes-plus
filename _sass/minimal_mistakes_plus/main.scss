@@ -8,7 +8,8 @@
 
   // Decrease the text size of pages; rem is used to avoid compounding caused by
   // em. Lists under TOC are not affected.
-  .page__content :is(p, .language-example, li:not(.toc li)) {
+  .page__content :is(p, .language-example, li:not(.toc li), .frgntr-live-input,
+                     .frgntr-live-status, .frgntr-live-output) {
     font-size: 0.8rem;
   }
 
@@ -249,7 +250,7 @@ ruby:hover rt.frgntr_hidden {
   background-color: rgba(128, 128, 128, 0.06);
   border-top: 1px solid rgba(128, 128, 128, 0.15);
   border-bottom: 1px solid rgba(128, 128, 128, 0.15);
-  margin-bottom: 0.5em;
+  margin-bottom: 0em;
 }
 
 .frgntr-toolbar-label {
@@ -289,4 +290,66 @@ ruby:hover rt.frgntr_hidden {
     opacity: 1;
     transform: scale(1.1);
   }
+}
+
+.frgntr-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--background-color, #fff);
+  min-width: 120px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(128, 128, 128, 0.15);
+  z-index: 10;
+  overflow: hidden;
+  margin-top: 0.5em;
+
+  &.show {
+    display: block;
+  }
+}
+
+.frgntr-dropdown-item {
+  padding: 0.5em 1em;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: inherit;
+
+  &:hover {
+    background-color: rgba(128, 128, 128, 0.1);
+  }
+
+  &.active {
+    font-weight: bold;
+    background-color: rgba(128, 128, 128, 0.05);
+  }
+}
+
+// Furigana converter
+.frgntr-live-input {
+  width: 100%;
+  min-height: 4.5em;
+  overflow-y: hidden;
+  resize: none;
+  padding: 0.8em;
+  box-sizing: border-box;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 4px;
+  background: rgba(128, 128, 128, 0.03);
+  height: 97px;
+}
+
+.frgntr-live-status {
+  color: gray;
+  margin-top: 0.4em;
+  display: none;
+}
+
+.frgntr-live-output {
+  margin-top: 1em;
+  min-height: 1.5em;
+  line-height: 1.8;
 }

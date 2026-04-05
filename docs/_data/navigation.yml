@@ -19,6 +19,8 @@ docs:
         url: /docs/org-mode/
       - title: "Encryption"
         url: /docs/encryption/
+      - title: "Furigana"
+        url: /docs/furigana/
       - title: "Helpers"
         url: /docs/helpers/
 
@@ -35,5 +37,7 @@ docs-dev:
         url: /docs/dev/org-mode/
       - title: "Encryption"
         url: /docs/dev/encryption/
+      - title: "Furigana"
+        url: /docs/dev/furigana/
       - title: "Helpers"
         url: /docs/dev/helpers/

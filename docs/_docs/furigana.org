@@ -1,0 +1,154 @@
+---
+title: "Furigana"
+permalink: /docs/furigana/
+last_modified_at: 2026-04-05T22:24:59+09:00
+toc: true
+toc_sticky: true
+furigana: true
+furigana_mode: hiragana
+furigana_selectable: false
+furigana_mouse_over: false
+---
+
+You can enable and compose Furigana for Japanese text easily with
+=minimal-mistakes-plus=.
+
+* Automatic Parsing
+
+To start, add these options to the front matter of a document:
+
+#+begin_src text
+furigana: true
+furigana_mode: hiragana
+furigana_selectable: false
+furigana_mouse_over: false
+#+end_src
+
+Then Furigana will be added automatically for the text in the output:
+
+#+begin_src text
+本日はお時間をいただき、ありがとうございます。私はマカオにあるマカオ理工大学を4
+年制の学士課程で卒業しました。3ヶ月後、鶴ヶ崎さんと会う。
+#+end_src
+
+本日はお時間をいただき、ありがとうございます。私はマカオにあるマカオ理工大学を4
+年制の学士課程で卒業しました。3ヶ月後、鶴ヶ崎さんと会う。
+
+For the options:
+
+- ~furigana: true/false~: Turn the Furigana parsing on (~true~) or off (~false~
+  or unset).
+- ~furigana_mode: hiragana/katakana/romaji~: Add Furigana in Hiragana (default),
+  Katakana or Romaji.
+
+- ~furigana_selectable: true/false~ Make the Furigana text selectable (~true~)
+  or unselectable (~false~ or unset).
+
+- ~furigana_mouse_over: true/false~: Only show Furigana on mouse over (~true~)
+  or always show it (~false~ or unset).
+
+These options can be applied per paragraph with the Kramdown attribute syntax:
+
+#+begin_src text
+{: furigana_mode="hiragana/katakana/romaji" furigana_selectable="true/false" furigana_mouse_over="true/fasle"}
+#+end_src
+
+The attribute syntax overrides the same option in the front matter.
+
+For the options ~furigana_selectable~ and ~furigana_mouse_over~:
+
+- If specified in the front matter a toolbar containing toggle icons for each
+  option appears just above the Table of Contents, with which you can toggle
+  them on or off for the whole page.
+
+- If specified per paragraph in Kramdown attribute syntax, the same toolbar
+  appears just above the marked paragraph so that they can be toggled on or off
+  only for that paragraph.
+
+#+begin_src text
+{: furigana_mode="katakana" furigana_selectable="true" furigana_mouse_over="true"}
+本日はお時間をいただき、ありがとうございます。私はマカオにあるマカオ理工大学を4
+年制の学士課程で卒業しました。3ヶ月後、鶴ヶ崎さんと会う。
+#+end_src
+
+{: furigana_mode="katakana" furigana_selectable="true" furigana_mouse_over="true"}
+本日はお時間をいただき、ありがとうございます。私はマカオにあるマカオ理工大学を4
+年制の学士課程で卒業しました。3ヶ月後、鶴ヶ崎さんと会う。
+
+* Manual Drafting
+
+You can also write a Japanese word and its Furigana in this format, which gives
+you finer control if the generated result isn't optimal:
+
+#+begin_src text
+（X｜Y｜Z：X1｜Y1｜Z1）
+#+end_src
+
+where X1 is the Hiragana form of X, Y1 is the Hiragana form of Y, and so on. ~X｜
+Y｜Z｜~ doesn't mean 3 characters, but 3 parts. Each part can be one or more
+characters. There can be one or more parts (not just 3). If there's no ~｜~
+present, there's only one part. There can be newlines inside this structure.
+
+Here's an example:
+
+#+begin_src text
+（本｜日：ほん｜じつ）はお時間をいただき、ありがとうございます。私はマカオにある
+マカオ（理｜工｜大｜学：り｜こう｜だい｜がく）を（4｜年｜制：よ｜ねん｜せい）の
+（学｜士：がく｜し）（課｜程：か｜てい）で（卒｜業：そつ｜ぎょう）しました。
+（3｜ヶ｜月：さん｜か｜げつ）後、（鶴｜ヶ｜崎：つる｜が｜さき）さんと会う。
+#+end_src
+
+（本｜日：ほん｜じつ）はお時間をいただき、ありがとうございます。私はマカオにある
+マカオ（理｜工｜大｜学：り｜こう｜だい｜がく）を（4｜年｜制：よ｜ねん｜せい）の
+（学｜士：がく｜し）（課｜程：か｜てい）で（卒｜業：そつ｜ぎょう）しました。
+（3｜ヶ｜月：さん｜か｜げつ）後、（鶴｜ヶ｜崎：つる｜が｜さき）さんと会う。
+
+This format also works for using Latin characters as the Furigana of Katakana
+words (i.e., loan words). For example:
+
+#+begin_src text
+（クラウド｜ネイティブ：cloud｜native）な（マルチテナント：multi-tenant）型（バッ
+クエンド：backend）（プラットフォーム：platform）の設計、（クラウドプラットフォー
+ム：cloud platform）、（モビリティサービス：mobility service）
+#+end_src
+
+（クラウド｜ネイティブ：cloud｜native）な（マルチテナント：multi-tenant）型（バッ
+クエンド：backend）（プラットフォーム：platform）の設計、（クラウドプラットフォー
+ム：cloud platform）、（モビリティサービス：mobility service）
+
+You can keep the attribute syntax and Furigana patterns in your document even if
+you don't want to enable Furigana parsing for them. When ~furigana: false~ is
+set they will be removed automatically from the output.
+
+* Furigana Converter
+
+Furigana Converter is a tool for you to add furigana to Japanese text
+automatically on the fly.
+
+In any page add:
+
+#+begin_src org
+{% raw %}{% include furigana-converter.html placeholder="Enter your contents..." %}{% endraw %}
+#+end_src
+
+which shows an input box which adds Furigana to the text and shows the result
+just below once you enter it.
+
+{% include furigana-converter.html placeholder="Enter your contents..." %}
+
+The options described above also control the output text, namely:
+
+#+begin_src org
+furigana_mode: hiragana/katakana/romaji/pattern
+furigana_selectable: true/false
+furigana_mouse_over: true/false
+#+end_src
+
+When the option ~furigana_mode~ is set an icon in the toolbar is shown, and when
+clicked a dropdown list of the values is expanded and the icon changes according
+to the selected value. It only affects the output of Furigana Converter and will
+have no effect for normal text when changed on the webpage. Furigana Converter
+adds the corresponding type of Furigana according the selected value. When
+~pattern~ is selected the output is composed of the Furigana patterns ~（X｜Y｜Z：
+X1｜Y1｜Z1）~ as described in the previous section, so it's just plain text
+without the ~<ruby>~ tags.

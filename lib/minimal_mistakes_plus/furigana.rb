@@ -135,6 +135,20 @@ module MinimalMistakesPlus
 
       if furigana_enabled
         global_buttons = []
+
+        mode_html = <<~HTML
+          <div class="frgntr-dropdown" style="position: relative; display: inline-flex; align-items: center;">
+            <i class="fas fa-language frgntr-icon" id="frgntr-mode-btn" title="Converter Mode" onclick="frgntrToggleDropdown(this)"></i>
+            <div class="frgntr-dropdown-menu" id="frgntr-mode-menu">
+              <div class="frgntr-dropdown-item active" data-mode="hiragana" data-icon="fa-language" onclick="frgntrSelectMode(this)">Hiragana</div>
+              <div class="frgntr-dropdown-item" data-mode="katakana" data-icon="fa-font" onclick="frgntrSelectMode(this)">Katakana</div>
+              <div class="frgntr-dropdown-item" data-mode="romaji" data-icon="fa-italic" onclick="frgntrSelectMode(this)">Romaji</div>
+              <div class="frgntr-dropdown-item" data-mode="pattern" data-icon="fa-code" onclick="frgntrSelectMode(this)">Pattern</div>
+            </div>
+          </div>
+        HTML
+        global_buttons << mode_html
+
         icon_hover = f_hover ? 'fa-eye-slash' : 'fa-eye'
         global_buttons << "<i class=\"fas #{icon_hover} frgntr-icon\" title=\"Toggle Visibility (Hover Mode)\" onclick=\"frgntrToggleGlobalHover(this)\"></i>"
 
@@ -341,6 +355,29 @@ module MinimalMistakesPlus
                rts.forEach(rt => rt.classList.remove('frgntr_unselectable'));
              }
            }
+
+           function frgntrToggleDropdown(el) {
+             document.getElementById('frgntr-mode-menu').classList.toggle('show');
+           }
+           function frgntrSelectMode(el) {
+             const mode = el.getAttribute('data-mode');
+             const iconClass = el.getAttribute('data-icon');
+             document.querySelectorAll('.frgntr-dropdown-item').forEach(item => item.classList.remove('active'));
+             el.classList.add('active');
+             document.getElementById('frgntr-mode-btn').className = `fas ${iconClass} frgntr-icon`;
+             window.frgntrLiveMode = mode;
+             document.getElementById('frgntr-mode-menu').classList.remove('show');
+             const liveInput = document.querySelector('.frgntr-live-input');
+             if (liveInput && liveInput.value) {
+               liveInput.dispatchEvent(new Event('input'));
+             }
+           }
+           window.addEventListener('click', function(e) {
+             if (!e.target.matches('#frgntr-mode-btn')) {
+               const menu = document.getElementById('frgntr-mode-menu');
+               if (menu && menu.classList.contains('show')) menu.classList.remove('show');
+             }
+           });
          </script>
        JS
         body = html_doc.at_css('body')
