@@ -133,6 +133,10 @@ module MinimalMistakesPlus
       f_selectable = doc.data['furigana_selectable'] == true || doc.data['furigana_selectable'] == 'true'
       f_hover = doc.data['furigana_mouse_over'] == true || doc.data['furigana_mouse_over'] == 'true'
 
+      translate_enabled = doc.data['translate'] == true || doc.data['translate'] == 'true'
+      translate_targets = doc.data['translate_targets'] || []
+      translate_targets = [translate_targets] if translate_targets.is_a?(String)
+
       if furigana_enabled
         global_buttons = []
 
@@ -149,13 +153,53 @@ module MinimalMistakesPlus
         HTML
         global_buttons << mode_html
 
+        trans_buttons = []
+        default_code = 'off'
+
+        if translate_enabled && !translate_targets.empty?
+          lang_map = {
+            'english' => 'en', 'chinese' => 'zh-CN', 'spanish' => 'es', 'french' => 'fr',
+            'korean' => 'ko', 'german' => 'de', 'russian' => 'ru'
+          }
+
+          icon_map = {
+            'english' => 'fa-font', 'chinese' => 'fa-language', 'spanish' => 'fa-globe-americas',
+            'french' => 'fa-globe-europe', 'korean' => 'fa-comment-dots', 'german' => 'fa-comment-alt',
+            'russian' => 'fa-comment'
+          }
+
+          default_target = translate_targets.first
+          default_code = lang_map[default_target.downcase] || default_target.downcase
+          default_icon = icon_map[default_target.downcase] || 'fa-globe'
+
+          items_html = translate_targets.map do |t|
+            code = lang_map[t.downcase] || t.downcase
+            icon = icon_map[t.downcase] || 'fa-globe'
+            active_class = (t == default_target) ? ' active' : ''
+            "<div class=\"frgntr-dropdown-item#{active_class}\" data-target=\"#{code}\" data-icon=\"#{icon}\" onclick=\"frgntrSelectTranslation(this)\">#{t}</div>"
+          end.join('')
+
+          trans_html = <<~HTML
+            <div class="frgntr-dropdown" style="position: relative; display: inline-flex; align-items: center;">
+              <i class="fas #{default_icon} frgntr-icon" id="frgntr-trans-btn" title="Live Translation" onclick="frgntrToggleTransDropdown(this)"></i>
+              <div class="frgntr-dropdown-menu" id="frgntr-trans-menu">
+              <div class="frgntr-dropdown-item" data-target="off" data-icon="fa-comment-slash" onclick="frgntrSelectTranslation(this)">Off</div>
+                #{items_html}
+              </div>
+            </div>
+          HTML
+          trans_buttons << trans_html
+        end
+
         icon_hover = f_hover ? 'fa-eye-slash' : 'fa-eye'
         global_buttons << "<i class=\"fas #{icon_hover} frgntr-icon\" title=\"Toggle Visibility (Hover Mode)\" onclick=\"frgntrToggleGlobalHover(this)\"></i>"
 
         icon_selectable = f_selectable ? 'fa-unlock' : 'fa-lock'
         global_buttons << "<i class=\"fas #{icon_selectable} frgntr-icon\" title=\"Toggle Selectability\" onclick=\"frgntrToggleGlobalSelectable(this)\"></i>"
 
-        toolbar_html = "<header><h4 class=\"nav__title\"><i class=\"fas fa-tools\"></i> Tools</h4></header><div class=\"frgntr-global-toolbar\"><span class=\"frgntr-toolbar-label\">Furigana</span><div class=\"frgntr-icon-group\">#{global_buttons.join(' ')}</div></div>"
+        all_buttons = trans_buttons + global_buttons
+        row_style = "display: flex; justify-content: flex-start; align-items: center;"
+        toolbar_html = "<header><h4 class=\"nav__title\"><i class=\"fas fa-tools\"></i> Tools</h4></header><div class=\"frgntr-global-toolbar\"><div class=\"frgntr-toolbar-row\" style=\"#{row_style}\"><div class=\"frgntr-icon-group\">#{all_buttons.join(' ')}</div></div></div>"
 
         sidebar_toc = html_doc.at_css('.sidebar__right.sticky .toc')
         if sidebar_toc
@@ -314,75 +358,11 @@ module MinimalMistakesPlus
       end
 
       if modified
-        script_html = <<~JS
-         <script>
-           function frgntrToggleGlobalHover(el) {
-             const isHidden = el.classList.contains('fa-eye-slash');
-             if(isHidden) {
-               el.classList.replace('fa-eye-slash', 'fa-eye');
-               document.querySelectorAll('rt:not(.has-local-hover)').forEach(rt => rt.classList.remove('frgntr_hidden'));
-             } else {
-               el.classList.replace('fa-eye', 'fa-eye-slash');
-               document.querySelectorAll('rt:not(.has-local-hover)').forEach(rt => rt.classList.add('frgntr_hidden'));
-             }
-           }
-           function frgntrToggleGlobalSelectable(el) {
-             const isSelectable = el.classList.contains('fa-unlock');
-             if(isSelectable) {
-               el.classList.replace('fa-unlock', 'fa-lock');
-               document.querySelectorAll('rt:not(.has-local-selectable)').forEach(rt => rt.classList.add('frgntr_unselectable'));
-             } else {
-               el.classList.replace('fa-lock', 'fa-unlock');
-               document.querySelectorAll('rt:not(.has-local-selectable)').forEach(rt => rt.classList.remove('frgntr_unselectable'));
-             }
-           }
-           function frgntrToggleLocalHover(el) {
-             const isHidden = el.classList.contains('fa-eye-slash');
-             const rts = el.parentElement.parentElement.querySelectorAll('rt');
-             if(isHidden) {
-               el.classList.replace('fa-eye-slash', 'fa-eye');
-               rts.forEach(rt => rt.classList.remove('frgntr_hidden'));
-             } else {
-               el.classList.replace('fa-eye', 'fa-eye-slash');
-               rts.forEach(rt => rt.classList.add('frgntr_hidden'));
-             }
-           }
-           function frgntrToggleLocalSelectable(el) {
-             const isSelectable = el.classList.contains('fa-unlock');
-             const rts = el.parentElement.parentElement.querySelectorAll('rt');
-             if(isSelectable) {
-               el.classList.replace('fa-unlock', 'fa-lock');
-               rts.forEach(rt => rt.classList.add('frgntr_unselectable'));
-             } else {
-               el.classList.replace('fa-lock', 'fa-unlock');
-               rts.forEach(rt => rt.classList.remove('frgntr_unselectable'));
-             }
-           }
-
-           function frgntrToggleDropdown(el) {
-             document.getElementById('frgntr-mode-menu').classList.toggle('show');
-           }
-           function frgntrSelectMode(el) {
-             const mode = el.getAttribute('data-mode');
-             const iconClass = el.getAttribute('data-icon');
-             document.querySelectorAll('.frgntr-dropdown-item').forEach(item => item.classList.remove('active'));
-             el.classList.add('active');
-             document.getElementById('frgntr-mode-btn').className = `fas ${iconClass} frgntr-icon`;
-             window.frgntrLiveMode = mode;
-             document.getElementById('frgntr-mode-menu').classList.remove('show');
-             const liveInput = document.querySelector('.frgntr-live-input');
-             if (liveInput && liveInput.value) {
-               liveInput.dispatchEvent(new Event('input'));
-             }
-           }
-           window.addEventListener('click', function(e) {
-             if (!e.target.matches('#frgntr-mode-btn')) {
-               const menu = document.getElementById('frgntr-mode-menu');
-               if (menu && menu.classList.contains('show')) menu.classList.remove('show');
-             }
-           });
-         </script>
-       JS
+        baseurl = doc.site.config['baseurl'] || ""
+        script_html = <<~HTML
+          <script>window.frgntrLiveTransTarget = '#{default_code}';</script>
+          <script src="#{baseurl}/assets/js/furigana_global.js"></script>
+        HTML
         body = html_doc.at_css('body')
         body.add_child(Nokogiri::HTML::DocumentFragment.parse(script_html)) if body
       end
@@ -393,6 +373,12 @@ end
 
 Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
   next unless doc.output_ext == '.html'
-
   MinimalMistakesPlus::Furigana.process(doc)
+end
+
+# Register the JS file to be automatically copied to _site/assets/js/
+Jekyll::Hooks.register :site, :post_read do |site|
+  gem_dir = File.expand_path("../../", __dir__)
+  site.static_files << Jekyll::StaticFile.new(site, gem_dir, 'assets/js', 'furigana_global.js')
+  site.static_files << Jekyll::StaticFile.new(site, gem_dir, 'assets/js', 'furigana_live.js')
 end

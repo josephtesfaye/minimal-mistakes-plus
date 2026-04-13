@@ -6,6 +6,8 @@ furigana: true
 furigana_mode: hiragana
 furigana_selectable: false
 furigana_mouse_over: false
+translate: true
+translate_targets: [English, Chinese]
 ---
 
 {% include furigana-converter.html placeholder="Enter your contents..." %}

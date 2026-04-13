@@ -460,3 +460,408 @@ code and the browser's URL resolution rules. Here is exactly what is happening:
    is treated as a relative absolute-path on the current domain. Therefore, the
    browser forcefully appends it to your site, resulting in the 404 error at
    https://josephtesfaye.com/cdn.jsdelivr.net/...!
+
+* Translator
+** Requirements
+
+Now I also want Furigana Converter to be able to show translation (in English or
+a selected language) for the input text. The source text (with furigana) and
+translation are shown in pairs sentence by sentence, with the translation on a
+new line just below the source.
+
+Similarly, these options are used in the front matter:
+
+#+begin_src org
+translate: true/false
+translate_targets: [English, Chinese]
+#+end_src
+
+- ~translate~: Toggle the translation on (true) or off (false or unset).
+- ~translate_targets~: Specify the languages into which the converter can translate.
+
+When translation is toggled on, show an icon in a TRANSLATION row just above the
+FURIGANA row in the toolbar. When the icon is clicked a dropdown list of the
+~translate_targets~ values is shown in the same order, and the icon changes to
+correspond to the selected language (i.e., each language has its own icon). You
+can select none of the languages, in which case the translation is toggled off
+and the icon changes to a corresponding look. The first value in
+~translate_targets~ is the selected language by default, not OFF.
+
+But before we start coding I want to discuss the feasibility of this feature. At
+first thought, I want the translation to work offline. The question is, is there
+a mature offline translator which gives you reliable translations? Would it be
+too large and too reliant on computational power to be loaded via CDN and hence
+impractical for my purpose? If we have to use online translators such as Google,
+Microsoft, DeepL, etc, do they provide APIs for third-party usage? Finally, can
+we use AI services from Google, OpenAI, etc.? But I want to keep the translation
+feature lightweight and free (no cost).
+
+** Discussion 1
+
+This is an excellent architectural question. Adding live translation to a purely
+static site (like Jekyll on GitHub Pages) introduces a very specific set of
+constraints because you do not have a backend server to process data or hide
+secrets.
+
+Here is a breakdown of the feasibility of each approach, balancing your
+requirements for reliability, cost, and payload size.
+
+*** The Offline Approach (Client-Side AI)
+
+It is actually possible to run translations entirely offline in the browser
+using WebAssembly and libraries like Hugging Face's =transformers.js=. * *How it
+works:* The browser downloads a quantized translation model (like
+Opus-MT/MarianMT or a tiny LLM) via CDN and runs the neural network directly on
+the user's CPU/GPU. * *The Problem (Size):* These models are inherently heavy. A
+specialized translation model (e.g., Japanese to English) is typically *70MB to
+150MB*. If you want Japanese to Chinese as well, that is another 70MB+ download.
+​* *Verdict:* While it is completely free and private, it drastically violates
+the "lightweight" requirement. It will freeze the browser tab during
+initialization and consume significant mobile data.
+
+*** Traditional Cloud APIs (DeepL, Google Translate, Microsoft)
+
+These services provide the most reliable, fastest, and accurate translations.
+They all offer APIs and generous free tiers (e.g., DeepL offers 500,000
+characters per month for free). * *The Problem (Security):* To use these APIs,
+you must send an API key with your request. Because your site is static HTML/JS,
+you would have to hardcode your API key into your JavaScript file. * *The Risk:*
+Bots constantly scrape GitHub and public websites for exposed API keys. Within
+hours, someone could steal your key, blow through your free tier limit, and
+either lock your account or charge your credit card. * *Verdict:* Never put API
+keys in client-side JavaScript. This makes direct API integration impossible for
+a static site without a proxy.
+
+*** AI Services (OpenAI, Google Gemini, Anthropic)
+
+Using LLMs provides fantastic, context-aware translations (often better than
+traditional translators for Japanese). Google Gemini, for instance, has a very
+generous free tier. * *The Problem (Security):* Exactly the same as the
+traditional APIs. Exposing an OpenAI or Gemini API key in your client-side
+JavaScript is a massive security risk. Both Google and OpenAI actively scan
+GitHub and will automatically revoke your key the moment they detect it in your
+public repository. * *Verdict:* Unusable directly from the browser for public
+static sites.
+
+*** Free, Keyless Web APIs (The "Hack" Approach)
+
+There are community-hosted proxy APIs (like Lingva Translate or public instances
+of LibreTranslate) that attempt to scrape Google Translate or run open-source
+models for free without requiring API keys. * *The Problem (Reliability &
+CORS):* These free instances are constantly overloaded, frequently go offline,
+and often suffer from CORS (Cross-Origin Resource Sharing) blocks, meaning your
+browser will refuse to load the data for security reasons. Furthermore, if you
+try to hit Google Translate's web endpoints directly via JS, Google will block
+you with a =429 Too Many Requests= or CORS error. * *Verdict:* Too unreliable
+for a polished feature.
+
+*** Recommended Solutions
+
+Since a purely static frontend cannot safely hold API keys, and local browser
+models are too large, you have two realistic paths forward:
+
+*Path A: The Serverless Proxy (Most Reliable & Free)* You can easily spin up a
+free "Serverless Function" using Cloudflare Workers, Vercel, or Netlify. 1. You
+create an account on Cloudflare (free) or Vercel (free). 2. You write a 20-line
+JavaScript function that holds your Google Gemini or DeepL API key securely on
+/their/ servers. 3. Your Furigana Converter sends the Japanese text to your
+serverless function URL. 4. The function talks to Gemini/DeepL, gets the
+translation, and sends it back to your site. * *Pros:* 100% secure, highly
+reliable, and remains entirely free (using Cloudflare's free tier +
+Gemini/DeepL's free tier). Keeps your frontend incredibly lightweight. * *Cons:*
+Requires setting up an external account (Cloudflare/Vercel) outside of your
+Jekyll repository.
+
+*Path B: The Browser Native API (The Future, but Experimental)* Google Chrome
+has recently started building an AI translation model directly into the browser
+itself (_{window.translation} API). * *Pros:* Zero network requests, instant,
+completely free, zero download (it's built into Chrome). * *Cons:* It is
+currently an experimental feature. It only works on recent versions of
+Chrome/Edge, requires users to have certain flags enabled, and does not work on
+Safari or Firefox yet.
+
+If you want a robust, production-ready feature today that stays free and
+lightweight, *Path A (Serverless Proxy with a free Gemini or DeepL API key)* is
+the standard architectural best practice. We can easily write the proxy code and
+the frontend Jekyll integration if you are open to using Cloudflare Workers or
+Vercel.
+
+** Discussion 2
+
+Is there non-LLM or non-AI solution for local translation, like a command-line
+tool or something whose output can be utilized by other apps? What are the best
+ones?
+
+To answer this, we need to clarify a quick technical distinction: truly "non-AI"
+translation is called Rule-Based Machine Translation (RBMT). RBMT relies
+entirely on hardcoded grammatical dictionaries. For structurally identical
+languages (like Spanish to Catalan), it works okay. For Japanese to English,
+RBMT produces completely unintelligible gibberish.
+
+However, if by "non-LLM" you mean you want to avoid massive, resource-heavy
+models (like ChatGPT or LLaMA) and instead want a *lightweight, dedicated
+translation engine* that runs locally on your CPU via the command line, there
+are excellent options.
+
+Here are the best command-line translation tools whose outputs can be easily
+piped into other applications or parsed by a Ruby script.
+
+*** Argos Translate (True Local Offline)
+
+Argos Translate is an open-source offline translation engine built on OpenNMT
+(Neural Machine Translation). It is exactly what you are looking for: it uses
+small, highly optimized models specifically trained for single language pairs
+(about 30MB to 50MB per language), requiring no GPU and running entirely
+offline.
+
+- *How it works:* It is a Python package that installs a command-line utility.
+- *CLI Usage:* =argos-translate --from ja --to en "こんにちは"=
+- *Integration:* You can easily call it from your Jekyll Ruby plugins using
+  =Open3.capture2=, capturing the standard output directly into your HTML
+  generation process.
+
+*** Translate-Shell (The API Wrapper)
+
+If you want the high accuracy of Google Translate, DeepL, or Bing without
+dealing with API keys or cloud accounts, =translate-shell= (formerly Google
+Translate CLI) is the gold standard for command-line users.
+
+- *How it works:* It is a pure shell script (Awk) that acts as a command-line
+  interface for public web translators. It scrapes the web endpoints invisibly.
+- *CLI Usage:* =trans -b ja:en "本日"= (The =-b= flag returns "brief" output,
+  which is just the raw translated string, perfect for scripts).
+- *Integration:* Extremely fast and native to Unix environments. The only
+  downside is that if your build script sends thousands of requests in a few
+  seconds, the IP might temporarily be rate-limited by the engines.
+
+*** Bergamot / Marian NMT (The Browser-Native Engine)
+
+Marian NMT is the engine written in pure C++ that powers Mozilla Firefox's new
+local, offline translation feature. It is incredibly fast and designed
+specifically for consumer CPUs rather than server GPUs.
+
+- *How it works:* While it has a command-line interface, its real power is that
+  it is compiled to WebAssembly.
+- *Integration:* This is actually what you would use if you wanted to embed an
+  offline translator directly into a webpage without a server. However, as
+  discussed previously, the WASM binaries and language packs still require the
+  user to download around 30MB-50MB of files when they visit the page.
+
+*** The Architectural Reality Check for Jekyll
+
+While these command-line tools are perfect for local text processing, we need to
+address how they fit into your specific Jekyll environment:
+
+*Scenario A: Build-Time Translation (Works perfectly)* If you are translating
+the static content of your posts (e.g., adding =translate: true= to the front
+matter and having a Ruby plugin parse the Japanese text and generate English
+text below it), these CLI tools are the perfect solution. Your =furigana.rb=
+script can pass the Japanese strings to =argos-translate= via the shell, and
+bake the English text permanently into the final HTML during the build phase.
+
+*Scenario B: Live Converter Input Box (Will not work)* If your goal is for the
+*Live Furigana Converter* to translate text that a user pastes into the browser
+/after/ the site has been published, a local CLI tool cannot help you. 1. GitHub
+Pages only hosts static HTML/JS; it cannot run your local Mac command-line
+tools. 2. The user's browser cannot execute shell scripts.
+
+For a live, in-browser input box to generate translations instantly on a static
+site, you are strictly limited to either injecting a heavy WebAssembly model
+into the client's browser, or passing the text to an external cloud proxy via
+JavaScript.
+
+** Discussion 3
+
+Does translate-shell require an API key? If not, why do we need a key in the
+previous discussion above using Google or Microsoft Translate? Can we go by
+without a key, but just with what's provided to the public for free? I remember
+seeing some websites using Google Translate to do multi-language support for
+themselves. It seems to be a widget or something. Can we use it also? Can we use
+it to translate just a certain area instead of the whole page?
+
+*** Why =translate-shell= Doesn't Need a Key
+
+=translate-shell= bypasses the need for an API key by acting as a web scraper.
+Instead of communicating with Google's official developer API, it constructs an
+HTTP request that mimics a normal user typing text into the public
+=translate.google.com= website. It then intercepts and parses the raw JSON
+responses that Google's frontend sends back to the browser.
+
+Because it pretends to be regular web traffic, Google provides the translation
+for free, just as it would if you manually visited the site.
+
+*** Why We Can't Replicate This in the Browser
+
+If =translate-shell= can scrape the public website for free, you might
+logically wonder why our client-side JavaScript can't just do the exact same
+thing.
+
+The barrier is *CORS* (Cross-Origin Resource Sharing). Modern browsers enforce
+strict security policies to prevent malicious scripts from interacting with
+other websites behind the scenes. If your JavaScript on =josephtesfaye.com=
+tries to silently fetch data from =translate.google.com=, the browser will
+instantly block the request because the origins do not match. =translate-shell=
+runs in your terminal, which does not enforce browser security policies like
+CORS, giving it total freedom to scrape data.
+
+*** The Google Translate Widget
+
+The widget you are remembering is the *Google Translate Website Translator*.
+While it seems like a perfect fit, there are two major issues with using it for
+your specific use case:
+
+1. *It is Deprecated:* Google officially retired this tool for new websites
+   in 2019. While legacy scripts still float around the internet and technically
+   function, it is unsupported, unmaintained, and could be completely shut down
+   by Google at any time.
+2. *Architectural Incompatibility:* The widget is designed to forcefully mutate
+   the DOM and replace the text /in place/. It does not provide an API to simply
+   "return" the translated string back to your code. Because your goal is to
+   pair the source text and translation sentence by sentence (placing the
+   English on a new line below the Japanese), the widget will fail. It would
+   simply overwrite your Japanese text with English text rather than giving you
+   the raw string to format yourself.
+
+/(Note: You can technically restrict the widget to a certain area by wrapping
+the rest of the page in a _{notranslate} CSS class, but it still suffers from
+the DOM-mutating behavior mentioned above.)/
+
+*** The Best Approach Forward
+
+To achieve your exact layout---a clean, instant translation returned as a string
+that we can format underneath the Furigana---without exposing API keys or
+battling CORS blocks, we need a proxy.
+
+The fastest, most efficient, and best approach is to create a *Cloudflare
+Worker*. It is a 100% free, serverless function that takes minutes to set up. 1.
+Your frontend sends the Japanese text to your Worker URL. 2. The Worker (which
+safely holds a free Gemini or DeepL API key on Cloudflare's secure servers)
+requests the translation. 3. The Worker returns the pure translated string back
+to your Jekyll site for formatting.
+
+Would you like me to walk you through writing the tiny Cloudflare Worker script
+and integrating it into our Live Converter logic?
+
+** Discussion 4
+
+Yes, show me how to do it step by step with Google Translate and Cloudflare
+Worker, and start making changes in minimal-mistakes-plus.
+
+This is the perfect scenario for a *Cloudflare Worker*. We will create a tiny
+serverless proxy that takes your Japanese text, forwards it to Google
+Translate's public, keyless web endpoint (the same one used by =translate-shell=
+and browser extensions), and returns the raw string to your static Jekyll site.
+
+This entirely bypasses browser CORS restrictions and requires zero API keys,
+keeping your site 100% free and lightweight.
+
+Here is the step-by-step implementation.
+
+*** Step 1: Create the Serverless Proxy (Cloudflare Worker)
+
+1. Go to [[https://workers.cloudflare.com/][Cloudflare Workers]] and sign up for
+   a free account (if you don't have one).
+2. Click *Create Application* -> *Create Worker*.
+3. Name it something like =furigana-translator= and deploy it.
+4. Click *Edit code* and replace the default code with this exact script (see
+   the same commit of these contents):
+5. [@5] Click *Deploy*. Note the URL it gives you (e.g.,
+   =https://furigana-translator.<your-username>.workers.dev=). You will need
+   this for Step 3.
+
+*** Step 2: Add the UI Dropdown (=furigana.rb=)
+
+We need to read your front-matter variables (=translate= and
+=translate_targets=) and inject a globe icon next to the Furigana settings in
+the toolbar.
+
+For the code changes see the same commit of the contents.
+
+*** Step 3: Implement Sentence Alignment (=furigana-converter.rb=)
+
+To correctly pair the Japanese with the translation, the JavaScript needs to
+check if translation is active. If it is, we split the text into sentences,
+convert each to Furigana, fetch the translation for each from your Cloudflare
+Worker, and stack them.
+
+/(*Important:* Make sure to replace =YOUR_CLOUDFLARE_WORKER_URL= on line =202=
+with your actual URL)./
+
+For the code changes see the same commit of the contents.
+
+** Discussion 5
+
+In step 1 I chose build from a github repo named translate-worker, which is
+empty currently. Show me how to complete this set up step by step.
+
+Connecting your Cloudflare Worker to a GitHub repository is actually the best
+way to do this. It sets up automatic CI/CD, meaning any future changes you make
+to the proxy code in your repository will automatically deploy to Cloudflare.
+
+Since your repository is currently empty, Cloudflare doesn't know what to deploy
+yet. We need to populate it with the standard file structure for a Cloudflare
+Worker. You can do this by cloning the repo to your local machine or just
+creating the files directly on the GitHub website.
+
+Here is exactly how to complete the setup step-by-step.
+
+*** Step 1: Add the Configuration File
+
+Cloudflare looks for a configuration file called =wrangler.toml= in the root of
+your repository to understand how to build your worker.
+
+Create a file named ==wrangler.toml== in the root folder of your
+=translate-worker= repository and paste this inside:
+
+#+begin_src toml
+name = "translate-worker"
+main = "src/index.js"
+compatibility_date = "2024-04-06"
+#+end_src
+
+*** Step 2: Add the Proxy Code
+
+Next, create a folder named ==src==. Inside that folder, create a file named
+==index.js==.
+
+Paste the proxy code we discussed earlier into ==src/index.js==:
+
+For the code changes see the same commit of the contents.
+
+*** Step 3: Push to GitHub
+
+Commit these two files (=wrangler.toml= and =src/index.js=) and push them to
+your =main= branch on GitHub. Your repository structure should now look exactly
+like this:
+
+#+begin_src text
+translate-worker/
+├── wrangler.toml
+└── src/
+    └── index.js
+#+end_src
+
+*** Step 4: Complete Cloudflare Setup
+
+1. Go back to the Cloudflare dashboard screen shown in your screenshot.
+2. Click the *Begin setup* button.
+3. Because you have a =wrangler.toml= file in the repository, Cloudflare should
+   automatically detect the settings.
+4. If it asks you for a Build Command, leave it blank.
+5. If it asks for the Entry point or Main file, ensure it points to
+   =src/index.js=.
+6. Click *Save and Deploy*.
+
+Cloudflare will take a few seconds to build and deploy. Once it finishes, it
+will give you a public URL (e.g.,
+=https://translate-worker.<your-username>.workers.dev=). You will take that
+specific URL and paste it into line 209 of your ==furigana-converter.rb== file.
+
+** Discussion 6
+
+Besides, I want to improve the sentence breaking logic. For an input like the
+above, it should remain one single line in the output, instead of 3 lines as
+done by the current logic. To be more specific, if a sentence is no more than 5
+characters (excluding punctuation), continue the line with the next sentence.
+For emojis, always treat them as part of the sentence before them and never
+break them away on another line.

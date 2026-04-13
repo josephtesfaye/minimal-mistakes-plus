@@ -152,3 +152,26 @@ adds the corresponding type of Furigana according the selected value. When
 ~pattern~ is selected the output is composed of the Furigana patterns ~（X｜Y｜Z：
 X1｜Y1｜Z1）~ as described in the previous section, so it's just plain text
 without the ~<ruby>~ tags.
+
+** Translation
+
+You can turn Furigana Converter into a translator with the these parameters:
+
+#+begin_src org
+translate: true/false
+translate_targets: [English, Chinese]
+#+end_src
+
+- ~translate~: Toggle the translation on (true) or off (false or unset).
+- ~translate_targets~: Specify the languages into which the converter can translate.
+
+When translation is toggled on, the source text and translation are shown in
+pairs sentence by sentence, with the translation just below the source.
+
+A translation control is shown in the toolbar. When clicked a dropdown list of
+the values of ~translate_targets~ are shown in the same order, with an
+additional ~Off~ item at the first place. The icon changes depending on the
+selected item.
+
+If ~Off~ is selected, translation is turned off. When you just open the tool the
+first value of ~translate_targets~ is selected, not ~Off~.
