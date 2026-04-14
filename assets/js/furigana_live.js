@@ -197,71 +197,96 @@ if (typeof window.frgntrLiveInitialized === 'undefined') {
                         status.style.display = 'block';
                         status.innerText = 'Translating...';
 
-                        // Split text into sentences for sentence-by-sentence alignment
-                        const rawSegments = text.match(/[^。！？\n]+[。！？\n]*/g) || [text];
-                        let pass1 = [];
-                        for (let seg of rawSegments) {
-                            let leadingMatch = seg.match(/^([\uD800-\uDBFF][\uDC00-\uDFFF]|\s|[。！？、，,.])+/);
-                            if (leadingMatch && pass1.length > 0) {
-                                pass1[pass1.length - 1] += leadingMatch[0];
-                                seg = seg.substring(leadingMatch[0].length);
-                            }
-                            if (seg.length > 0) pass1.push(seg);
-                        }
+                        try {
+                            // 1. Normalize Source Text
+                            let cleanText = text.replace(/\n/g, ''); // Remove newlines
 
-                        let segments = [];
-                        let buffer = "";
-                        for (let i = 0; i < pass1.length; i++) {
-                            buffer += pass1[i];
-                            let stripped = buffer.replace(/[。！？、，,.\n\s]/g, '').replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '');
-                            let charCount = Array.from(stripped).length;
-                            if (charCount <= 5 && i < pass1.length - 1) continue;
-                            segments.push(buffer);
-                            buffer = "";
-                        }
+                            // Remove spaces between CJK characters and CJK punctuation
+                            const cjk = "[\u3400-\u4DBF\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF，。、！？；：”’（）《》〈〉【】『』「」]";
+                            const cjkSpaceRegex = new RegExp(`(${cjk})\\s+(?=(${cjk}|\\d))`, 'g');
+                            cleanText = cleanText.replace(cjkSpaceRegex, '$1');
 
-                        let finalOutput = "";
-
-                        for (const segment of segments) {
-                            if (!segment.trim()) {
-                                finalOutput += segment.replace(/\n/g, '<br>');
-                                continue;
+                            // 2. Segment strictly by punctuation
+                            const rawSegments = cleanText.match(/[^。！？]+[。！？]*/g) || [cleanText];
+                            let segments = [];
+                            for (let seg of rawSegments) {
+                                // Keep emojis and trailing spaces attached to the previous segment
+                                let leadingMatch = seg.match(/^([\uD800-\uDBFF][\uDC00-\uDFFF]|\s|[、，,])+/);
+                                if (leadingMatch && segments.length > 0) {
+                                    segments[segments.length - 1] += leadingMatch[0];
+                                    seg = seg.substring(leadingMatch[0].length);
+                                }
+                                if (seg.trim().length > 0) segments.push(seg.trim());
                             }
 
+                            // 3. Ensure every segment contains a delimiter
+                            let normalizedSegments = segments.map(seg => {
+                                if (!/[。！？]/.test(seg)) return seg + '。';
+                                return seg;
+                            });
+
+                            // 4. Construct unified request payload using the @ neutral delimiter
+                            const requestText = normalizedSegments.join(" @ ");
+
+                            // 5. Send single batch request
+                            const res = await fetch("https://translate-worker.josephtesfaye022.workers.dev", {
+                                method: "POST",
+                                body: JSON.stringify({
+                                    text: requestText,
+                                    target: transTarget
+                                }),
+                                headers: {
+                                    "Content-Type": "application/json"
+                                }
+                            });
+
+                            if (!res.ok) {
+                                const errorPayload = await res.json();
+                                throw new Error(errorPayload.error || "Unknown Worker Error");
+                            }
+
+                            const data = await res.json();
+
+                            // 6. Split translation back into perfectly aligned segments
+                            const translatedSegments = (data.translated || "").split(/\s*@\s*/);
+
+                            // 7. Generate HTML for each aligned pair
+                            let finalOutput = "";
+                            for (let i = 0; i < normalizedSegments.length; i++) {
+                                const segment = normalizedSegments[i];
+                                const trans = translatedSegments[i] || "";
+
+                                let {
+                                    processed,
+                                    surrogates
+                                } = extractSurrogates(segment);
+                                let rawFuri = await ks.convert(processed, {
+                                    mode: "furigana",
+                                    to: "hiragana"
+                                });
+                                rawFuri = restoreSurrogates(rawFuri, surrogates);
+                                let furiHtml = await formatFurigana(rawFuri, mode, ks);
+
+                                finalOutput += `<div class="frgntr-sentence-pair" style="margin-bottom: 0.8em;"><div>${furiHtml}</div><div class="frgntr-translation" style="color: rgba(128,128,128,0.85); font-size: 0.9em; margin-top: 0.2em;">${trans}</div></div>`;
+                            }
+
+                            output.innerHTML = finalOutput;
+                        } catch (e) {
+                            console.error("Translation Failed:", e.message);
+                            // Fallback to pure Furigana if the API fails entirely
                             let {
                                 processed,
                                 surrogates
-                            } = extractSurrogates(segment);
+                            } = extractSurrogates(text);
                             let rawFuri = await ks.convert(processed, {
                                 mode: "furigana",
                                 to: "hiragana"
                             });
                             rawFuri = restoreSurrogates(rawFuri, surrogates);
-                            let furiHtml = await formatFurigana(rawFuri, mode, ks);
-
-                            try {
-                                const res = await fetch("https://translate-worker.josephtesfaye022.workers.dev", {
-                                    method: "POST",
-                                    body: JSON.stringify({
-                                        text: segment,
-                                        target: transTarget
-                                    }),
-                                    headers: {
-                                        "Content-Type": "application/json"
-                                    }
-                                });
-                                const data = await res.json();
-                                if (data.translated) {
-                                    finalOutput += `<div class="frgntr-sentence-pair" style="margin-bottom: 0.8em;"><div>${furiHtml}</div><div class="frgntr-translation" style="color: rgba(128,128,128,0.85); font-size: 0.9em; margin-top: 0.2em;">${data.translated}</div></div>`;
-                                    continue;
-                                }
-                            } catch (e) {
-                                console.error("Translation Error:", e);
-                            }
-                            finalOutput += `<div>${furiHtml}</div>`;
+                            output.innerHTML = await formatFurigana(rawFuri, mode, ks);
+                        } finally {
+                            status.style.display = 'none';
                         }
-                        output.innerHTML = finalOutput;
-                        status.style.display = 'none';
                     }
                 }, 400);
             });

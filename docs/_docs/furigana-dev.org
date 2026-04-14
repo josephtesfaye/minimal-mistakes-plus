@@ -865,3 +865,129 @@ done by the current logic. To be more specific, if a sentence is no more than 5
 characters (excluding punctuation), continue the line with the next sentence.
 For emojis, always treat them as part of the sentence before them and never
 break them away on another line.
+
+** Discussion 7: How to prevent Too Many Requests error
+
+The root cause of this error is rate limiting (Status 429: Too Many Requests),
+not your browser.
+
+In our previous JavaScript logic, the Live Converter was designed to split the
+Japanese text into individual sentences and translate them one by one. If you
+paste a paragraph with 5 sentences, your browser fires 5 simultaneous POST
+requests to your Cloudflare Worker. The Worker then instantly fires 5
+simultaneous requests to Google Translate from the exact same Cloudflare IP
+address. Google’s automated defenses flag this burst of traffic as a scraper,
+temporarily ban the IP, and return an HTML warning page instead of JSON—which
+crashes the Worker.
+
+To make this completely bulletproof, we need to implement a Fallback Waterfall
+in your Cloudflare Worker. If Google blocks the primary endpoint, the Worker
+will instantly and invisibly switch to a secondary endpoint, and then a third
+community API if necessary.
+
+Replace the entire contents of your index.js file in your translate-worker
+repository with this highly resilient version:
+
+
+What about making changes to =furigana_live.js= so that only one request is sent
+to the Cloudflare Worker, and hence Google Translate, no matter how many
+sentences there are in the input? Then we do the sentence segmentation based on
+both the source text and the response. To do accurate segmentation, we can do it
+like this:
+
+Before sending for translation, we normalize the source text:
+
+A sentence is delimited by and only by these punctuation symbols =。！？.!?=. If
+none of them is found for a segment, complete it with the =。= symbol. Remove
+newlines, if any. Remove spaces between CJK characters (including the CJK
+punctuation symbols).
+
+For accurate segmentation of the translation to pair with the source text
+segment by segment, we insert a neutral symbol like =@= between the segments of
+the source text, so that the translation also contains these symbols and hence
+the same segments.
+
+Meanwhile, keep the fallback waterfall logic:
+
+To make this completely bulletproof, we need to implement a Fallback Waterfall
+in your Cloudflare Worker. If Google blocks the primary endpoint, the Worker
+will instantly and invisibly switch to a secondary endpoint, and then a third
+community API if necessary.
+
+** How can you test index.js locally without deploying to Cloudflare?
+
+The best and officially supported way to test Cloudflare Workers locally is by
+using *Wrangler*, the official Cloudflare CLI. It spins up a local server on
+your machine that perfectly simulates the Cloudflare environment.
+
+Since you already have your =wrangler.toml= and =src/index.js= set up, you are
+perfectly positioned to do this.
+
+Here is how you can test your worker locally step-by-step:
+
+*** Step 1: Install Wrangler
+
+You will need Node.js installed on your computer. Open your terminal, navigate
+to your =translate-worker= directory (where your =wrangler.toml= lives), and
+run:
+
+#+begin_src sh
+npm install -g wrangler
+#+end_src
+
+Alternatively, you can just use =npx wrangler= in the next step without
+installing it globally.
+
+*** Step 2: Start the Local Development Server
+
+In the same terminal directory, run the following command:
+
+#+begin_src sh
+wrangler dev
+#+end_src
+
+Wrangler will read your =wrangler.toml=, compile your =index.js=, and start a
+local server. It will usually output a local URL for you to use, typically:
+=http://localhost:8787=
+
+*Bonus:* This server supports *hot-reloading*. If you make changes to your
+=index.js= and save the file, the local server will instantly update without
+needing a restart!
+
+*** Step 3: Test the API Locally
+
+You can test if it's working using a standard terminal =curl= command, or by
+temporarily pointing your Jekyll site to the local server.
+
+*Option A: Test via Terminal (cURL)*
+
+While =wrangler dev= is running in one terminal window, open a /new/ terminal
+window and send a test POST request:
+
+#+begin_src sh
+curl -X POST http://localhost:8787/ \
+-H "Content-Type: application/json" \
+-d '{"text": "こんにちは", "target": "en"}'
+#+end_src
+
+You should instantly see a JSON response like ={"translated":"Hello"}=.
+
+*Option B: Test via Your Frontend (=furigana_live.js=)*
+
+If you want to test the entire flow inside your browser:
+
+1. Open your =assets/js/furigana_live.js= file.
+2. Find the fetch call (around line 208) and temporarily change the URL from
+   your Cloudflare production URL to your localhost:
+
+   #+begin_src diff
+   -const res = await fetch("https://translate-worker.josephtesfaye022.workers.dev", {
+   +const res = await fetch("http://localhost:8787", {
+   #+end_src
+
+3. Run your Jekyll site locally.
+4. Type Japanese into the Live Converter on your local site. Your browser will
+   send the request to your local Wrangler server instead of Cloudflare.
+
+Just remember to change the URL back to your =.workers.dev= address before you
+commit and push to GitHub!
