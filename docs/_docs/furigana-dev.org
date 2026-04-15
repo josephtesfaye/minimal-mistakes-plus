@@ -897,7 +897,7 @@ like this:
 
 Before sending for translation, we normalize the source text:
 
-A sentence is delimited by and only by these punctuation symbols =。！？.!?=. If
+A sentence is delimited by and only by these punctuation symbols =。！？=. If
 none of them is found for a segment, complete it with the =。= symbol. Remove
 newlines, if any. Remove spaces between CJK characters (including the CJK
 punctuation symbols).
@@ -994,7 +994,7 @@ commit and push to GitHub!
 
 ** TODO Tasks
 
-The following input triggers 500 internal error:
+The following input is guaranteed to trigger the 500 internal error:
 
 #+begin_example
 "message": [
@@ -1006,6 +1006,8 @@ The following input triggers 500 internal error:
 Input:
 
 依頼データ抽出終了の処理についてですが、ログメッセージを出力する際、common/message.pyに新しいメッセージを定義すべきでしょうか？それとも既存のものを使うべきでしょうか？ このあたりの判断基準が分からず、迷っております。 一般的なベストプラクティス（またはプロジェクトの慣習）があれば教えていただけますでしょうか？
+
+But when I remove "common/message.py" there's no problem. Why's that?
 
 
 - Write tests!
