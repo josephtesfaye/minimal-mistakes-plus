@@ -991,3 +991,37 @@ If you want to test the entire flow inside your browser:
 
 Just remember to change the URL back to your =.workers.dev= address before you
 commit and push to GitHub!
+
+** TODO Tasks
+
+The following input triggers 500 internal error:
+
+#+begin_example
+"message": [
+    "Worker crashed:",
+    "All translation engines failed. Last error: Lingva API Blocked (404)"
+],
+#+end_example
+
+Input:
+
+依頼データ抽出終了の処理についてですが、ログメッセージを出力する際、common/message.pyに新しいメッセージを定義すべきでしょうか？それとも既存のものを使うべきでしょうか？ このあたりの判断基準が分からず、迷っております。 一般的なベストプラクティス（またはプロジェクトの慣習）があれば教えていただけますでしょうか？
+
+
+- Write tests!
+- Currently the translation process blocks the furigana process, that is, the
+  furiganized text isn't shown until the translation is completed. We should
+  prioritize the furigana process. Don't let the translation process block it.
+- I want to make a history of the inputs and outputs. Each input and its output
+  form a record in the history, and you can cycle through the records or jump to
+  one.
+- You can download or save a record or multiple records, and paste them to a
+  post in Org or Markdown.
+- I want to be able to hide or show the translations with a control in the toolbar.
+  The control has three states:
+  - Show: Show all translations
+  - Hide: Hide all translations without affecting other elements, say, the
+    source texts stay in place so that you know the translations are still there
+    but just hidden.
+  - Collapse: Hide all translations by collapsing the spaces between the source
+    texts as if there's nothing between them.

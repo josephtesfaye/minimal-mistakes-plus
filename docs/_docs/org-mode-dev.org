@@ -216,3 +216,13 @@ in ~#+BEGIN_HTML~.
 
 Check the commit of these lines here to see the exact lines to change in
 =org_converter.rb= file.
+
+** TODO Tasks
+
+How to compose alternative contents?
+
+A section whose contents are mostly the same for different systems such as
+Windows, macOS, Linux, but with difference in certain parameters or segments for
+each system.
+
+How do you compose such contents in Org Mode and Markdown?
