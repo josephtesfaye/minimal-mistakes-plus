@@ -992,20 +992,53 @@ If you want to test the entire flow inside your browser:
 Just remember to change the URL back to your =.workers.dev= address before you
 commit and push to GitHub!
 
+** Tests
+
+- This should not produce 500 internal error:
+
+  依頼データ抽出終了の処理についてですが、ログメッセージを出力する際、
+  common/message.pyに新しいメッセージを定義すべきでしょうか？
+
 ** TODO Tasks
 
-The following input triggers 500 internal error:
+In the following example, we need some fixes or changes:
+
+- The line =本チャットで依頼（レビュー者は誰！？）= is currently segmented,
+  which shouldn't be. For the content in a pair brackets =（）= if it has these
+  segmentation marks =。！？= before the closing bracket the segementation
+  should be done after the closing bracket so that it doesn't break away on the
+  next segment. In addition, a line like =本チャットで依頼（レビュー者は誰！？ま
+  だわからない。）= shouldn't be segmented either even though there are multiple
+  segmentation marks in between, all because we want to keep the brackets in the
+  same segment. Note that if there are no segmentation marks in the brackets
+  there should be no segmentation either, such as =以下にPh１（現在はPh２）の開
+  発時=.
+
+- If a line starts with one of these symbols =*#※■= it's mostly intended on
+  its own line. So we should always treat such a line as a segment, that is, it
+  never joins the previous or next segment.
 
 #+begin_example
-"message": [
-    "Worker crashed:",
-    "All translation engines failed. Last error: Lingva API Blocked (404)"
-],
+お疲れ様です。
+あくまで現時点の考えで記載させていただきます
+よろしくお願いします。
+※今後杉田さんと要相談事項です
+ 
+■「単体テスト仕様書作成」について
+以下にPh１（現在はPh２）の開発時の単体テスト仕様書があります。
+ここで使用されているフォーマット、粒度で同じく実施していくことになると思います。
+ 
+（参考）
+/dis-share/2024/12_構築/単体テスト/単体テスト仕様書
+ 
+■「単体テスト実施結果レビュー」について
+詳細設計では、バッチ内レビュー、全体レビューとTeemsで会議していますが
+単体テスト実施結果レビューは会議体ではなく、紙面依頼レビューを考えています。
+本チャットで依頼（レビュー者は誰！？）
+
+レビュー者の結果がPh1では以下に格納されているので
+指摘されたら担当者が修正
 #+end_example
-
-Input:
-
-依頼データ抽出終了の処理についてですが、ログメッセージを出力する際、common/message.pyに新しいメッセージを定義すべきでしょうか？それとも既存のものを使うべきでしょうか？ このあたりの判断基準が分からず、迷っております。 一般的なベストプラクティス（またはプロジェクトの慣習）があれば教えていただけますでしょうか？
 
 
 - Write tests!
