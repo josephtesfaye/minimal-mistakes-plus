@@ -897,7 +897,7 @@ like this:
 
 Before sending for translation, we normalize the source text:
 
-A sentence is delimited by and only by these punctuation symbols =。！？.!?=. If
+A sentence is delimited by and only by these punctuation symbols =。！？=. If
 none of them is found for a segment, complete it with the =。= symbol. Remove
 newlines, if any. Remove spaces between CJK characters (including the CJK
 punctuation symbols).
@@ -1017,29 +1017,6 @@ In the following example, we need some fixes or changes:
 - If a line starts with one of these symbols =*#※■= it's mostly intended on
   its own line. So we should always treat such a line as a segment, that is, it
   never joins the previous or next segment.
-
-#+begin_example
-お疲れ様です。
-あくまで現時点の考えで記載させていただきます
-よろしくお願いします。
-※今後杉田さんと要相談事項です
- 
-■「単体テスト仕様書作成」について
-以下にPh１（現在はPh２）の開発時の単体テスト仕様書があります。
-ここで使用されているフォーマット、粒度で同じく実施していくことになると思います。
- 
-（参考）
-/dis-share/2024/12_構築/単体テスト/単体テスト仕様書
- 
-■「単体テスト実施結果レビュー」について
-詳細設計では、バッチ内レビュー、全体レビューとTeemsで会議していますが
-単体テスト実施結果レビューは会議体ではなく、紙面依頼レビューを考えています。
-本チャットで依頼（レビュー者は誰！？）
-
-レビュー者の結果がPh1では以下に格納されているので
-指摘されたら担当者が修正
-#+end_example
-
 
 - Write tests!
 - Currently the translation process blocks the furigana process, that is, the
