@@ -1,0 +1,23 @@
+---
+title: "Org Mode Gallery"
+permalink: /test/org-mode-gallery/
+symlinks:
+  - /assets/archive/image/foo ~/Downloads/temp/archive/image/foo
+link_abbrs:
+  - link_abbr: foo https://i.postimg.cc/Vv8jFw8D/
+  - link_abbr: foo2 /assets/archive/image/foo/
+gallery:
+  - https://i.postimg.cc/Vv8jFw8D/unsplash-gallery-image-1.jpg
+  - foo:unsplash-gallery-image-1.jpg
+  - [[foo:unsplash-gallery-image-1.jpg]]
+  - image_path: foo:unsplash-gallery-image-1.jpg
+    alt: "Use alt for title and a link abbreviation."
+  - image_path: foo:unsplash-gallery-image-1.jpg
+    title: Some text without a link
+  - image_path: foo:unsplash-gallery-image-1.jpg
+    title: "Link to post: [Dark Mode]({{ site.baseurl }}/docs/dark-mode/)"
+  - image_path: foo:unsplash-gallery-image-1.jpg
+    title: "A title with an org link: [[foo:unsplash-gallery-image-1.jpg]]"
+---
+
+{% include gallery columns=6 caption="" %}

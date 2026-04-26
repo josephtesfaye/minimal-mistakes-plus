@@ -14,8 +14,10 @@ gallery:
     alt: "Use alt for title and a link abbreviation."
   - image_path: foo:unsplash-gallery-image-1.jpg
     title: "Link to post: [Dark Mode]({{ site.baseurl }}/docs/dark-mode/)"
-  - foo:https://i.postimg.cc/Vv8jFw8D/unsplash-gallery-image-1.jpg
+  - https://i.postimg.cc/Vv8jFw8D/unsplash-gallery-image-1.jpg
   - foo:unsplash-gallery-image-1.jpg
+  - image_path: foo:unsplash-gallery-image-1.jpg
+    title: "A title with an org link: [[foo:unsplash-gallery-image-1.jpg]]"
 gallery2:
   - url: foo:unsplash-gallery-image-1.jpg
     image_path: foo:unsplash-gallery-image-1.jpg
@@ -24,7 +26,6 @@ gallery2:
   - foo:unsplash-gallery-image-1.jpg
   - image_path: [[foo:unsplash-gallery-image-1.jpg]]
     title: An image referenced through an org link
-  - [[foo:unsplash-gallery-image-1.jpg]]
   - [[foo:unsplash-gallery-image-1.jpg]]
 gallery3:
   - url: foo2:unsplash-gallery-image-1.jpg
@@ -96,7 +97,7 @@ these extra features:
    {% endraw %}
 
 All these customizations are backward-compatible, that is, you can still write a
-gallery in the original way to get the original feel.
+gallery in the original way without a problem.
 
 Here's a gallery demo utilizing the above features:
 
@@ -110,8 +111,10 @@ gallery:
     alt: "Use alt for title and a link abbreviation."
   - image_path: foo:unsplash-gallery-image-1.jpg
     title: "Link to post: [Dark Mode]({{ site.baseurl }}/docs/dark-mode/)"
-  - foo:https://i.postimg.cc/Vv8jFw8D/unsplash-gallery-image-1.jpg
+  - https://i.postimg.cc/Vv8jFw8D/unsplash-gallery-image-1.jpg
   - foo:unsplash-gallery-image-1.jpg
+  - image_path: foo:unsplash-gallery-image-1.jpg
+    title: "A title with an org link: [[foo:unsplash-gallery-image-1.jpg]]"
 ---
 
 {% include gallery columns=6 caption="My custom gallery" %}
@@ -119,6 +122,18 @@ gallery:
 {% endraw %}
 
 {% include gallery columns=6 caption="My custom gallery" %}
+
+<div class="notice--warning" org="1">
+When a title contains square brackets [ and ] you must enclose it in double
+quotes, like this:
+
+#+begin_src org
+title: "A title with an org link: [[foo:unsplash-gallery-image-1.jpg]]"
+#+end_src
+
+The standard and required practice in Jekyll is to always double-quote any front
+matter values that contain special reserved characters (~[]{}:#~).
+</div>
 
 * Link Abbreviations
 #+LINK: foo https://i.postimg.cc/Vv8jFw8D/
