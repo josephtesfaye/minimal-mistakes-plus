@@ -310,9 +310,9 @@ Jekyll::Hooks.register [:pages, :documents], :pre_render do |doc|
     include_regex = /^[ \t]*(\{%[ \t]*include[ \t]+(?:figure|gallery)(?:(?!%\}).|\{%.*?%\})*%\})[ \t]*$/m
 
     # Notices for block contents
-    div_open_regex = /(?i:^[ \t]*<div[^>]+(?:markdown|org)="1"[^>]*>[ \t]*$)/
-    div_close_regex = /(?i:^[ \t]*<\/div>[ \t]*$)/
-    orgify_block_regex = /(?mi:^[ \t]*<div[^>]*>(?:(?!<\/div>).)*?\{\{[^}]*\|[ \t]*orgify[ \t]*\}\}(?:(?!<\/div>).)*?<\/div>[ \t]*$)/
+    div_open_regex = /(?i:^([ \t]*)<div[^>]+(?:markdown|org)="1"[^>]*>[ \t]*$)/
+    div_close_regex = /(?i:^([ \t]*)<\/div>[ \t]*$)/
+    orgify_block_regex = /(?mi:^([ \t]*)<div[^>]*>(?:(?!<\/div>).)*?\{\{[^}]*\|[ \t]*orgify[ \t]*\}\}(?:(?!<\/div>).)*?<\/div>[ \t]*$)/
 
     # Advanced Tables
     emacs_table_regex = /^(?:[ \t]*#\+ATTR_ARGS:.*?\r?\n)?[ \t]*\+[-=+]+\+[ \t]*\r?\n(?:^[ \t]*[+|].*?\r?\n)*^[ \t]*\+[-=+]+\+[ \t]*(?=\r?\n|\z)/i
@@ -327,15 +327,20 @@ Jekyll::Hooks.register [:pages, :documents], :pre_render do |doc|
         Jekyll::OrgAdvancedTables.generate_html_table(match, :emacs)
       elsif match.match?(/\A[ \t]*#\+ATTR_ARGS:.*?:complex[ \t]+t\b/i)
         Jekyll::OrgAdvancedTables.generate_html_table(match, :org_complex)
-      elsif match.match?(include_regex) || match.match?(orgify_block_regex)
+      elsif match.match?(include_regex)
         "\n#+BEGIN_HTML\n#{match.strip}\n#+END_HTML\n"
-      elsif match.match?(div_open_regex)
+      elsif m = match.match(orgify_block_regex)
+        indent = m[1]
+        "#{indent}#+BEGIN_HTML\n#{indent}#{match.strip}\n#{indent}#+END_HTML"
+      elsif m = match.match(div_open_regex)
+        indent = m[1]
         depth += 1
         tag = match.strip.gsub(/[ \t]*(?:markdown|org)="1"/i, '')
-        "\n#+BEGIN_HTML\n#{tag}\n#+END_HTML\n"
-      elsif match.match?(div_close_regex) && depth > 0
+        "#{indent}#+BEGIN_HTML\n#{indent}#{tag}\n#{indent}#+END_HTML"
+      elsif (m = match.match(div_close_regex)) && depth > 0
+        indent = m[1]
         depth -= 1
-        "\n#+BEGIN_HTML\n</div>\n#+END_HTML\n"
+        "#{indent}#+BEGIN_HTML\n#{indent}</div>\n#{indent}#+END_HTML"
       else
         match
       end

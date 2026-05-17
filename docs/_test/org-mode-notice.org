@@ -1,10 +1,15 @@
 ---
 title: "Org Mode Notices"
 permalink: /test/org-mode-notice/
-last_modified_at: 2026-03-15
+date: 2026-03-15T11:15:02+09:00
+last_modified_at: 2026-05-10T11:15:20+09:00
+classes: narrow
+toc: true
+toc_sticky: true
 ---
 
-Style 1: Using ~<div class="notice" org="1">~
+* Block Styles
+** Style 1: Using ~<div class="notice" org="1">~
 
 #+NAME: literal-block-1
 #+begin_src org
@@ -43,7 +48,7 @@ A code block:
 #+end_src
 </div>
 
-Style 2: Using ~{% raw %}{% capture <id> %}{% endraw %}~
+** Style 2: Using ~{% raw %}{% capture <id> %}{% endraw %}~
 
 {% raw %}
 #+begin_src org
@@ -87,13 +92,25 @@ A code block:
 
 <div class="notice">{{ notice-1 | orgify }}</div>
 
-Style 3: Using straight HTML
+** Style 3: Using straight HTML
 
 #+NAME: literal-block-2
 #+begin_src org
 <div class="notice">
-  <h4>Message</h4>
-  <p>A basic message.</p>
+  <p><b>Bold Text:</b> Plain text. A <a href="#images">link</a>.</p>
+  <p>A list:</p>
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+  </ul>
+  <p>A code block:</p>
+  <div class="language-html highlighter-rouge">
+    <div class="highlight">
+      <pre class="highlight"><code><span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;body&gt;</span>Hello World!<span class="nt">&lt;body&gt;</span>
+<span class="nt">&lt;/html&gt;</span></code></pre>
+    </div>
+  </div>
 </div>
 #+end_src
 
@@ -101,7 +118,49 @@ Output:
 
 #+begin_html
 <div class="notice">
-  <h4>Message</h4>
-  <p>A basic message.</p>
+  <p><b>Bold Text:</b> Plain text. A <a href="#images">link</a>.</p>
+  <p>A list:</p>
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+  </ul>
+  <p>A code block:</p>
+  <div class="language-html highlighter-rouge">
+    <div class="highlight">
+      <pre class="highlight"><code><span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;body&gt;</span>Hello World!<span class="nt">&lt;body&gt;</span>
+<span class="nt">&lt;/html&gt;</span></code></pre>
+    </div>
+  </div>
 </div>
 #+end_html
+
+** Working with Lists
+
+Using notices in a list:
+
+1. First item
+
+   Some text.
+
+   {: .notice}
+   *Bold Text:* Plain text. A [[#images][link]].
+
+2. Second item
+
+   Some text.
+
+   <div class="notice" org="1">
+   *Bold Text:* Plain text. A [[#images][link]].
+   </div>
+
+3. Third item
+
+   Some text.
+
+   #+begin_html
+   <div class="notice">
+   <b>Bold Text:</b> Plain text. A <a href="#images">link</a>.
+   </div>
+   #+end_html
+

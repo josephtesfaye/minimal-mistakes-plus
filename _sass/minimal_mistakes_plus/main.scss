@@ -93,8 +93,21 @@
   }
 
   // Remove the top margin of child elements of a list item, except those in TOC
-  li:not(.toc li) :is(p, ul, ol) {
+  li:not(.toc li) {
+    p, ul, ol {
     margin: 0em auto 0.5em 0em;
+  }
+
+    .notice, .notice--primary, .notice--info, .notice--warning,
+    .notice--success, .notice--danger {
+      font-size: 0.8rem !important;
+      margin: 1em 0 !important;
+    }
+
+    .notice>p, .notice--primary>p, .notice--info>p, .notice--warning>p,
+    .notice--success>p, .notice--danger>p {
+      margin: 0 0 1.3em;
+    }
   }
 
   // Prevent table headers from line-wrapping to ensure proper column distribution
